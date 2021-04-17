@@ -1,0 +1,79 @@
+---
+title: "EDA"
+output: html_document
+---
+
+```{r, echo = FALSE, message = FALSE}
+source(here::here("scripts/setup.R"))
+```
+
+```{r}
+
+df <- read_csv("data/OnlineNewsPopularity.csv")
+
+df %>%
+  ggplot(aes(n_tokens_title)) +
+  geom_histogram(binwidth=1)
+
+
+
+df %>%
+  filter(n_non_stop_words < 5) %>%
+  ggplot(aes(n_unique_tokens)) +
+  geom_histogram(binwidth=0.01)
+
+
+normal_df %>%
+  ggplot(aes(n_tokens_content)) +
+  geom_histogram(binwidth=1)
+
+
+
+
+df %>%
+  filter(n_non_stop_words < 5) %>%
+  ggplot(aes(n_non_stop_unique_tokens)) +
+  geom_histogram(binwidth=0.01)
+
+df %>%
+  ggplot(aes(num_hrefs)) +
+  geom_histogram(binwidth=1)
+
+df %>%
+  ggplot(aes(num_self_hrefs)) +
+  geom_histogram(binwidth=1)
+
+non_zero_df %>%
+  ggplot(aes(average_token_length)) +
+  geom_histogram(binwidth=0.01)
+
+df %>%
+  pivot_longer(data_channel_is_lifestyle:data_channel_is_world, names_to = "channel", values_to = "isnot") %>% 
+  filter(isnot ==1) %>%
+  ggplot(aes(x = channel)) +
+  geom_bar() +
+  coord_flip()
+  
+
+
+
+```
+
+```{r}
+zero_df <- df %>%
+  filter(n_tokens_content == 0)
+
+non_zero_df <- df %>%
+  filter(n_tokens_content > 0)
+
+long_df <- df %>%
+  filter(n_tokens_content > 700)
+
+
+
+normal_df <- df %>%
+  filter(n_tokens_content < 700 & n_tokens_content > 0)
+  
+
+```
+
