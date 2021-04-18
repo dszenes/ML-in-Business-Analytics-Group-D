@@ -90,8 +90,7 @@ datatable(
   rownames = FALSE,
   filter = "top",
   options = list(pageLength = 5, scrollX = T)
-)#we need to be in Rmd to run this code (later, when we need to knit)
-
+)
 #global EDA for all features
 view(dfSummary(df, style = "grid",plain.ascii = FALSE, tmp.img.dir = "/tmp"))
 
