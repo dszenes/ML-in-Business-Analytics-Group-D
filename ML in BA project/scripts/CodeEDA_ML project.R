@@ -7,7 +7,7 @@ library(dplyr)
 library(tibble)
 
 # Import the dataset
-DatasetMLproject <- read_csv("DatasetMLproject.csv")
+DatasetMLproject <- read_csv("data/OnlineNewsPopularity.csv")
 
 # Cut from column 1 to column 30 and create a variable with the number of row, could be useful.
 
@@ -82,10 +82,14 @@ ggplot(data = Dataset3) +
   geom_bar(mapping = aes(x= World, fill= X), fill= "pink")
 
 
-# Things to improve: including a proportion percentage instead of the count, then add also the other
-# topic variables in the same graph.
 
 
+Dataset3 %>%
+  pivot_longer(Lifestyle:World, names_to = "topic", values_to = "value") %>% 
+  filter(value == "yes") %>%
+  ggplot(mapping = aes(x = topic ) ) +
+  geom_bar() +
+  coord_flip()
 
 
 
