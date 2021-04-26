@@ -1,0 +1,123 @@
+# 2 Data
+
+```{r, echo = FALSE, message = FALSE}
+source(here::here("scripts/setup.R"))
+```
+
+## Raw Data Set
+
+<br>
+
+## 2.1 Mashable Data Set
+
+<style>
+div.blue { background-color:#e6f0ff; border-radius: 5px; padding: 20px;}
+</style>
+<div class = "blue">
+First, we will load the data set that record some sets of features about Mashable articles collected in a period of two years.
+</div>
+
+<br>
+
+### Online News Populartiy
+```{r}
+df <- read_csv(file = here::here("data/OnlineNewsPopularity.csv"))
+df <- as_tibble(df)
+```
+
+<br>
+
+```{r}
+datatable(
+  df[1:250, ],
+  rownames = FALSE,
+  filter = "top",
+  options = list(pageLength = 5, scrollX = T)
+)
+```
+
+_Source of the data set:_ [https://archive.ics.uci.edu/ml/datasets/Online+News+Popularity]
+
+<style>
+div.blue { background-color:#e6f0ff; border-radius: 5px; padding: 20px;}
+</style>
+<div class = "blue">
+
+Data Set Information:
+
+<br>
+
+* The articles were published by Mashable (www.mashable.com) and their content as the rights to reproduce it belongs to them. Hence, this dataset does not share the original content but some statistics associated with it. The original content be publicly accessed and retrieved using the provided urls.
+
+* Acquisition date: January 8, 2015
+
+* The estimated relative performance values were estimated by the authors using a Random Forest classifier and a rolling windows as assessment method. See their article for more details on how the relative performance values were set.
+
+<br>
+
+</div>
+
+<br>
+
+* Find below the variables of the data set
+
+
+  + `url` URL of the article (non-predictive)
+  + `timedelta`  Days between the article publication and the dataset acquisition (non-predictive)
+  + `n_tokens_title` Number of words in the title 
+  + `n_tokens_content` Number of words in the content
+  + `n_unique_tokens` Rate of unique words in the content
+  + `n_non_stop_words` Rate of non-stop words in the content
+  + `n_non_stop_unique_tokens` Rate of unique non-stop words in the content
+  + `num_hrefs` Number of links 
+  + `num_self_hrefs` Number of links to other articles published by Mashable
+  + `num_imgs` Number of images
+  + `num_videos` Number of videos
+  + `average_token_length` Average length of the words in the content
+  + `num_keywords` Number of keywords in the metadata 
+  + `data_channel_is_lifestyle` Is data channel 'Lifestyle'?
+  + `data_channel_is_entertainment` Is data channel 'Entertainment'?
+  + work in progress
+
+
+```{r}
+#rapid check of the dataset
+summary_df <- summary(df)
+
+options(knitr.kable.NA = "") # to hide the non-relevant NAs
+
+# for those interested, you can also use the papeR to produce summaries as nice tables https://cran.r-project.org/web/packages/papeR/vignettes/papeR_introduction.html
+
+summary_df %>% kable_maker(caption = "summary_df")
+```
+
+
+### Filtering the raw data set
+
+```{r}
+zero_df <- df %>%
+  filter(n_tokens_content == 0)
+```
+
+```{r}
+non_zero_df <- df %>%
+  filter(n_tokens_content > 0)
+```
+
+```{r}
+long_df <- df %>%
+  filter(n_tokens_content > 700)
+```
+
+```{r}
+normal_df <- df %>%
+  filter(n_tokens_content < 1500 & n_tokens_content > 0)
+```
+
+```{r}
+#creating shares popularity classes
+share_label <- cut(df$shares, breaks = c(0, 645, 861, 1400, 31300, 53700, 77200, 843300))
+levels(share_label) <- c("Very Poor", "Poor", "Average", "Good", "Very Good", "Excellent", "Exceptional")
+
+new <- data_frame(df, share_label, )
+```
