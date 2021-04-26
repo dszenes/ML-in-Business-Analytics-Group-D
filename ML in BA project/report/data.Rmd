@@ -106,6 +106,15 @@ for (i in 2:length(df2)) {
 
 <br>
 
+```{r, fig.height=4, fig.width=8}
+par(mfrow = c(3, 4))
+for (i in 2:length(df2)) {
+  boxplot(df2[, i], xlab = names(df2)[i])
+}
+```
+
+<br>
+
 ### Filtering the raw data set
 
 ```{r}
@@ -129,11 +138,42 @@ normal_df <- df %>%
 ```
 
 ```{r}
-#creating shares popularity classes
-share_label <- cut(df$shares, breaks = c(0, 645, 861, 1400, 31300, 53700, 77200, 843300))
-levels(share_label) <- c("Very Poor", "Poor", "Average", "Good", "Very Good", "Excellent", "Exceptional")
+normal_df$day <- rep("Monday", nrow(normal_df))
+normal_df$day[normal_df$weekday_is_tuesday==1] <- "Tuesday"
+normal_df$day[normal_df$weekday_is_wednesday==1] <- "Wednesday"
+normal_df$day[normal_df$weekday_is_thursday==1] <- "Thursday"
+normal_df$day[normal_df$weekday_is_friday==1] <- "Friday"
+normal_df$day[normal_df$weekday_is_saturday==1] <- "Saturday"
+normal_df$day[normal_df$weekday_is_sunday==1] <- "Sunday"
 
-new <- data_frame(df, share_label, )
+ggplot(data=normal_df, aes(as.factor(day), log(shares))) + geom_boxplot()
 ```
+
+```{r}
+normal_df$data_channel <- rep("Lifestyle", nrow(normal_df))
+normal_df$data_channel[normal_df$data_channel_is_entertainment==1] <- "Entertainment"
+normal_df$data_channel[normal_df$data_channel_is_bus==1] <- "Business"
+normal_df$data_channel[normal_df$data_channel_is_socmed==1] <- "Social Media"
+normal_df$data_channel[normal_df$data_channel_is_tech==1] <- "Tech"
+normal_df$data_channel[normal_df$data_channel_is_world==1] <- "World"
+ggplot(data=normal_df, aes(as.factor(data_channel), log(shares))) + geom_boxplot()
+```
+
+
+```{r}
+#creating shares popularity classes based on quantiles
+quantile(normal_df$shares, probs = c(seq(0,1, length.out = 25)))
+
+share_label <- cut(normal_df$shares, breaks = c(0, 946, 1700, 7200, 843300))
+levels(share_label) <- c("Poor", "Average", "Good", "Very Good")
+
+new <- tibble(normal_df, share_label)
+```
+
+```{r}
+final_df <- new %>% select(-url, -timedelta, -data_channel_is_lifestyle, -data_channel_is_entertainment, -data_channel_is_bus, -data_channel_is_socmed, -data_channel_is_tech, -data_channel_is_world, -weekday_is_monday, -weekday_is_tuesday, -weekday_is_wednesday, -weekday_is_thursday, -weekday_is_friday, -weekday_is_saturday, -weekday_is_monday)
+```
+
+
 
 
