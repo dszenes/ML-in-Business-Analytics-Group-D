@@ -51,7 +51,7 @@ kable_maker <- function(a_tibble, ...) {
     kable(longtable = TRUE,align='l',...) %>%
     kable_styling(bootstrap_options = c("striped", "hover")) %>%
     `if`(nrow(a_tibble) > 5, (.) %>% scroll_box(height = "260px"), .) %>% 
-    `if`(ncol(a_tibble) > 20, (.) %>% scroll_box(height = "120px"), .)
+    `if`(ncol(a_tibble) > 20, (.) %>% scroll_box(height = "200px"), .)
 }
 
 
