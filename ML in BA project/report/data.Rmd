@@ -25,6 +25,9 @@ df <- read_csv(file = here::here("data/OnlineNewsPopularity.csv"))
 df <- as_tibble(df)
 ```
 
+```{r}
+df2 <- read.csv(file = here::here("data/OnlineNewsPopularity.csv"))
+```
 <br>
 
 ```{r}
@@ -79,6 +82,7 @@ Data Set Information:
   + `data_channel_is_entertainment` Is data channel 'Entertainment'?
   + work in progress
 
+<br>
 
 ```{r}
 #rapid check of the dataset
@@ -91,6 +95,16 @@ options(knitr.kable.NA = "") # to hide the non-relevant NAs
 summary_df %>% kable_maker(caption = "summary_df")
 ```
 
+<br>
+
+```{r, fig.height=4, fig.width=8}
+par(mfrow = c(3, 4))
+for (i in 2:length(df2)) {
+  hist(df2[, i], xlab = names(df2)[i])
+}
+```
+
+<br>
 
 ### Filtering the raw data set
 
@@ -121,3 +135,5 @@ levels(share_label) <- c("Very Poor", "Poor", "Average", "Good", "Very Good", "E
 
 new <- data_frame(df, share_label, )
 ```
+
+
