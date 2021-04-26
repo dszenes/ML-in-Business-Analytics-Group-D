@@ -5,9 +5,10 @@
 # load the required packages
 packages <- c(
   "here", # for the project's organization
-  "tidyverse", "lubridate", # for wrangling
-  "ggrepel", "gghighlight", "patchwork", "maps", "scales", # for plotting
-  "knitr", "kableExtra", "bookdown", "rmarkdown" # for the report
+  "tidyverse", "lubridate", "reshape2", # for wrangling
+  "ggrepel", "gghighlight", "patchwork", "maps", "scales", "leaflet", "sf", "spData", "highcharter", # for plotting
+  "knitr", "kableExtra", "bookdown", "rmarkdown", "DT", # for the report
+  "ggthemes" #for vizualiozation
 )
 purrr::walk(packages, library, character.only = TRUE)
 
@@ -22,7 +23,7 @@ options(
   width = 69,
   tibble.width = 69,
   cli.unicode = FALSE,
-  scipen = 999
+  highcharter.theme = hc_theme_smpl(tooltip = list(valueDecimals = 2))
 )
 
 # ggplot options
@@ -43,4 +44,14 @@ opts_chunk$set(
   message = FALSE,
   echo = FALSE
 )
+
+# creating function for a nice kable
+kable_maker <- function(a_tibble, ...) {
+  a_tibble %>%
+    kable(longtable = TRUE,align='l',...) %>%
+    kable_styling(bootstrap_options = c("striped", "hover")) %>%
+    `if`(nrow(a_tibble) > 5, (.) %>% scroll_box(height = "260px"), .) %>% 
+    `if`(ncol(a_tibble) > 20, (.) %>% scroll_box(height = "120px"), .)
+}
+
 
