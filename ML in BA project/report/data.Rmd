@@ -171,7 +171,7 @@ new <- tibble(normal_df, share_label)
 ```
 
 ```{r}
-final_df <- new %>% select(-url, -timedelta, -data_channel_is_lifestyle, -data_channel_is_entertainment, -data_channel_is_bus, -data_channel_is_socmed, -data_channel_is_tech, -data_channel_is_world, -weekday_is_monday, -weekday_is_tuesday, -weekday_is_wednesday, -weekday_is_thursday, -weekday_is_friday, -weekday_is_saturday, -weekday_is_monday)
+final_df <- new %>% select(-url, -timedelta, -data_channel_is_lifestyle, -data_channel_is_entertainment, -data_channel_is_bus, -data_channel_is_socmed, -data_channel_is_tech, -data_channel_is_world, -weekday_is_monday, -weekday_is_tuesday, -weekday_is_wednesday, -weekday_is_thursday, -weekday_is_friday, -weekday_is_saturday, -weekday_is_sunday, -kw_min_min, -kw_max_min, -kw_avg_min, -kw_min_max, -kw_max_max, -kw_avg_max, -kw_min_avg, -kw_max_avg, -kw_avg_avg, -self_reference_min_shares, -self_reference_max_shares, -min_positive_polarity, -max_positive_polarity, -min_negative_polarity, -max_negative_polarity, -num_self_hrefs, -LDA_00, -LDA_01, -LDA_02, -LDA_03, -LDA_04, -abs_title_subjectivity, -abs_title_sentiment_polarity, -avg_positive_polarity, -avg_negative_polarity)
 ```
 
 
