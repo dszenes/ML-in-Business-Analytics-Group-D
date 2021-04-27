@@ -1,0 +1,45 @@
+# 4 Analysis
+
+
+```{r, echo = FALSE, message = FALSE}
+source(here::here("scripts/setup.R"))
+```
+
+## 4.1 Research question 1
+
+- Let's put ourselves in context. Our first research question is as follows:
+
+<style>
+div.blue { background-color:#e6f0ff; border-radius: 5px; padding: 20px;}
+</style>
+<div class = "blue">
+
+RQ
+
+</div>
+
+<br><br><br>
+
+...
+
+<br>
+
+```{r}
+library(ggcorrplot)
+ggcorrplot(cor(final_df[1:21]))
+```
+
+<br>
+
+```{r}
+library(FactoMineR)
+library(factoextra)
+pop.pca <- PCA(final_df[1:21], ncp = 211, graph = FALSE)
+pop.pca
+
+fviz_pca_var(pop.pca)
+fviz_eig(pop.pca, addlabels = TRUE, ncp=21)
+for (i in 1:5) {
+  print(fviz_contrib(pop.pca, choice = "var", axes = i))
+}
+```
