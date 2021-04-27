@@ -6,7 +6,7 @@
 packages <- c(
   "here", # for the project's organization
   "tidyverse", "lubridate", "reshape2", # for wrangling
-  "ggrepel", "gghighlight", "patchwork", "maps", "scales", "leaflet", "sf", "spData", "highcharter", # for plotting
+  "ggrepel", "gghighlight", "patchwork", "maps", "scales", "highcharter", "caret" ,# for plotting
   "knitr", "kableExtra", "bookdown", "rmarkdown", "DT", # for the report
   "ggthemes" #for vizualiozation
 )
