@@ -48,8 +48,6 @@ div.blue { background-color:#e6f0ff; border-radius: 5px; padding: 20px;}
 
 Data Set Information:
 
-<br>
-
 * The articles were published by Mashable (www.mashable.com) and their content as the rights to reproduce it belongs to them. Hence, this dataset does not share the original content but some statistics associated with it. The original content be publicly accessed and retrieved using the provided urls.
 
 * Acquisition date: January 8, 2015
@@ -80,40 +78,73 @@ Data Set Information:
   + `num_keywords` Number of keywords in the metadata 
   + `data_channel_is_lifestyle` Is data channel 'Lifestyle'?
   + `data_channel_is_entertainment` Is data channel 'Entertainment'?
-  + work in progress
+  + `data_channel_is_bus` Is data channel 'Business'?
+  + `data_channel_is_socmed` Is data channel 'Social Media'?
+  + `data_channel_is_tech` Is data channel 'Tech'?
+  + `data_channel_is_world` Is data channel 'World'?
+  + `kw_min_min` Worst keyword (min. shares)
+  + `kw_max_min` Worst keyword (max. shares)
+  + `kw_avg_min` Worst keyword (avg. shares)
+  + `kw_min_max` Best keyword (min. shares)
+  + `kw_max_max` Best keyword (max. shares)
+  + `kw_avg_max` Best keyword (avg. shares)
+  + `kw_min_avg` Avg. keyword (min. shares)
+  + `kw_max_avg` Avg. keyword (max. shares)
+  + `kw_avg_avg` Avg. keyword (avg. shares)
+  + `self_reference_min_shares` Min. shares of referenced articles in Mashable
+  + `self_reference_max_shares` Max. shares of referenced articles in Mashable
+  + `self_reference_avg_sharess` Avg. shares of referenced articles in Mashable
+  + `weekday_is_monday` Was the article published on a Monday?
+  + `weekday_is_tuesday` Was the article published on a Tuesday?
+  + `weekday_is_wednesday` Was the article published on a Wednesday?
+  + `weekday_is_thursday` Was the article published on a Thursday?
+  + `weekday_is_friday` Was the article published on a Friday?
+  + `weekday_is_saturday` Was the article published on a Saturday?
+  + `weekday_is_sunday` Was the article published on a Sunday?
+  + `is_weekend` Was the article published on the weekend?
+  + `LDA_00` Closeness to LDA topic 0
+  + `LDA_01` Closeness to LDA topic 1
+  + `LDA_02` Closeness to LDA topic 2
+  + `LDA_03` Closeness to LDA topic 3
+  + `LDA_04` Closeness to LDA topic 4
+  + `global_subjectivity` Text subjectivity
+  + `global_sentiment_polarity` Text sentiment polarity
+  + `global_rate_positive_words` Rate of positive words in the content
+  + `global_rate_negative_words` Rate of negative words in the content
+  + `rate_positive_words` Rate of positive words among non-neutral tokens
+  + `rate_negative_words` Rate of negative words among non-neutral tokens
+  + `avg_positive_polarity` Avg. polarity of positive words
+  + `min_positive_polarity` Min. polarity of positive words
+  + `max_positive_polarity` Max. polarity of positive words
+  + `avg_negative_polarity` Avg. polarity of negative words
+  + `min_negative_polarity` Min. polarity of negative words
+  + `max_negative_polarity` Max. polarity of negative words
+  + `title_subjectivity` Title subjectivity
+  + `title_sentiment_polarity` Title polarity
+  + `abs_title_subjectivity` Absolute subjectivity level
+  + `abs_title_sentiment_polarity` Absolute polarity level
+  + `shares` Number of shares (target)
 
 <br>
 
 ```{r}
-#rapid check of the dataset
 summary_df <- summary(df)
-
-options(knitr.kable.NA = "") # to hide the non-relevant NAs
-
-# for those interested, you can also use the papeR to produce summaries as nice tables https://cran.r-project.org/web/packages/papeR/vignettes/papeR_introduction.html
-
 summary_df %>% kable_maker(caption = "summary_df")
 ```
 
 <br>
 
-```{r, fig.height=4, fig.width=8}
-par(mfrow = c(3, 4))
+```{r, fig.height=8, fig.width=12, fig.fullwidth=TRUE, out.width = '100%', fig.align='center'}
+par(mfrow = c(4, 6))
 for (i in 2:length(df2)) {
   hist(df2[, i], xlab = names(df2)[i])
-}
-```
-
-<br>
-
-```{r, fig.height=4, fig.width=8}
-par(mfrow = c(3, 4))
-for (i in 2:length(df2)) {
   boxplot(df2[, i], xlab = names(df2)[i])
 }
 ```
 
+
 <br>
+
 
 ### Filtering the raw data set
 
@@ -138,29 +169,6 @@ normal_df <- df %>%
 ```
 
 ```{r}
-normal_df$day <- rep("Monday", nrow(normal_df))
-normal_df$day[normal_df$weekday_is_tuesday==1] <- "Tuesday"
-normal_df$day[normal_df$weekday_is_wednesday==1] <- "Wednesday"
-normal_df$day[normal_df$weekday_is_thursday==1] <- "Thursday"
-normal_df$day[normal_df$weekday_is_friday==1] <- "Friday"
-normal_df$day[normal_df$weekday_is_saturday==1] <- "Saturday"
-normal_df$day[normal_df$weekday_is_sunday==1] <- "Sunday"
-
-ggplot(data=normal_df, aes(as.factor(day), log(shares))) + geom_boxplot()
-```
-
-```{r}
-normal_df$data_channel <- rep("Lifestyle", nrow(normal_df))
-normal_df$data_channel[normal_df$data_channel_is_entertainment==1] <- "Entertainment"
-normal_df$data_channel[normal_df$data_channel_is_bus==1] <- "Business"
-normal_df$data_channel[normal_df$data_channel_is_socmed==1] <- "Social Media"
-normal_df$data_channel[normal_df$data_channel_is_tech==1] <- "Tech"
-normal_df$data_channel[normal_df$data_channel_is_world==1] <- "World"
-ggplot(data=normal_df, aes(as.factor(data_channel), log(shares))) + geom_boxplot()
-```
-
-
-```{r}
 #creating shares popularity classes based on quantiles
 quantile(normal_df$shares, probs = c(seq(0,1, length.out = 25)))
 
@@ -171,9 +179,5 @@ new <- tibble(normal_df, share_label)
 ```
 
 ```{r}
-final_df <- new %>% select(-url, -timedelta, -data_channel_is_lifestyle, -data_channel_is_entertainment, -data_channel_is_bus, -data_channel_is_socmed, -data_channel_is_tech, -data_channel_is_world, -weekday_is_monday, -weekday_is_tuesday, -weekday_is_wednesday, -weekday_is_thursday, -weekday_is_friday, -weekday_is_saturday, -weekday_is_sunday, -kw_min_min, -kw_max_min, -kw_avg_min, -kw_min_max, -kw_max_max, -kw_avg_max, -kw_min_avg, -kw_max_avg, -kw_avg_avg, -self_reference_min_shares, -self_reference_max_shares, -min_positive_polarity, -max_positive_polarity, -min_negative_polarity, -max_negative_polarity, -num_self_hrefs, -LDA_00, -LDA_01, -LDA_02, -LDA_03, -LDA_04, -abs_title_subjectivity, -abs_title_sentiment_polarity, -avg_positive_polarity, -avg_negative_polarity)
+final_df <- new %>% select(-url, -timedelta, -data_channel_is_lifestyle, -data_channel_is_entertainment, -data_channel_is_bus, -data_channel_is_socmed, -data_channel_is_tech, -data_channel_is_world, -weekday_is_monday, -weekday_is_tuesday, -weekday_is_wednesday, -weekday_is_thursday, -weekday_is_friday, -weekday_is_saturday, -weekday_is_sunday, -kw_min_min, -kw_max_min, -kw_avg_min, -kw_min_max, -kw_max_max, -kw_avg_max, -kw_min_avg, -kw_max_avg, -kw_avg_avg, -self_reference_min_shares, -self_reference_max_shares, -min_positive_polarity, -max_positive_polarity, -min_negative_polarity, -max_negative_polarity, -num_self_hrefs, -LDA_00, -LDA_01, -LDA_02, -LDA_03, -LDA_04, -abs_title_subjectivity, -abs_title_sentiment_polarity, -avg_positive_polarity, -avg_negative_polarity, -global_rate_negative_words, -global_rate_positive_words)
 ```
-
-
-
-
