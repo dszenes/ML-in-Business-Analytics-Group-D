@@ -5,8 +5,12 @@ source(here::here("scripts/setup.R"))
 
 ```{r}
 normal_df %>%
-  pivot_longer(data_channel_is_lifestyle:data_channel_is_world, names_to = "channel", values_to = "isnot") %>% 
-  filter(isnot ==1) %>%
+  pivot_longer(
+    data_channel_is_lifestyle:data_channel_is_world,
+    names_to = "channel",
+    values_to = "isnot"
+  ) %>%
+  filter(isnot == 1) %>%
   ggplot(aes(x = channel)) +
   geom_bar() +
   coord_flip()
@@ -49,30 +53,51 @@ final_df %>%
 ```
 
 ```{r}
-#Sentiment analysis is basically the process of determining the attitude or the emotion of the writer, i.e., whether it is positive or negative or neutral.
-#The sentiment function of textblob returns two properties, polarity, and subjectivity.
-#Polarity is float which lies in the range of [-1,1] where 1 means positive statement and -1 means a negative statement.
-#Subjective sentences generally refer to personal opinion, emotion or judgment whereas objective refers to factual information.
-#Subjectivity is also a float which lies in the range of [0,1].
-
-#polarity and subjectivity given shares popularity classes
-
-final_df %>% group_by(share_label) %>% summarise(mean(title_sentiment_polarity)) %>%
-  ggplot(aes(x = share_label, y = `mean(title_sentiment_polarity)`)) +
-  geom_bar(stat = "identity") + ggtitle("Title Sentimental Polarity given Shares Popularity") +
-  xlab("Popularity Label") +
-  ylab("Mean Sentiment Polarity") +
-  theme(plot.title = element_text(hjust = 0.5))#BARPLOT 
-
 final_df %>%
   group_by(share_label) %>%
-  summarise(mean(title_subjectivity)) %>%
-  ggplot(aes(x = share_label, y = `mean(title_subjectivity)`)) +
+  summarise(mean(n_tokens_title)) %>%
+  ggplot(aes(x = share_label, y = `mean(n_tokens_title)`)) +
   geom_bar(stat = "identity") +
-  ggtitle("Title Sentimental Subjectivity given Shares Popularity") +
+  ggtitle("") +
   xlab("Popularity Label") +
-  ylab("Mean Subjectivity") +
+  ylab("Mean Number of Token in the title") +
   theme(plot.title = element_text(hjust = 0.5))#BARPLOT 
+```
+
+```{r}
+final_df %>%
+  group_by(share_label) %>%
+  summarise(mean(n_tokens_content)) %>%
+  ggplot(aes(x = share_label, y = `mean(n_tokens_content)`)) +
+  geom_bar(stat = "identity") +
+  ggtitle("") +
+  xlab("Popularity Label") +
+  ylab("Mean Number of Token in the article") +
+  theme(plot.title = element_text(hjust = 0.5))#BARPLOT 
+```
+
+```{r}
+final_df %>%
+  group_by(share_label) %>%
+  summarise(mean(n_unique_tokens)) %>%
+  ggplot(aes(x = share_label, y = `mean(n_unique_tokens)`)) +
+  geom_bar(stat = "identity") +
+  ggtitle("") +
+  xlab("Popularity Label") +
+  ylab("?") +
+  theme(plot.title = element_text(hjust = 0.5))#BARPLOT 
+```
+
+```{r}
+final_df %>%
+  group_by(share_label) %>%
+  summarise(mean(num_hrefs)) %>%
+  ggplot(aes(x = share_label, y = `mean(num_hrefs)`)) +
+  geom_bar(stat = "identity") +
+  ggtitle("") +
+  xlab("Popularity Label") +
+  ylab("Mean Ref") +
+  theme(plot.title = element_text(hjust = 0.5)) #BARPLOT 
 ```
 
 ```{r}
@@ -114,56 +139,74 @@ final_df %>%
 ```{r}
 final_df %>%
   group_by(share_label) %>%
-  summarise(mean(num_hrefs)) %>%
-  ggplot(aes(x = share_label, y = `mean(num_hrefs)`)) +
+  summarise(mean(num_keywords)) %>%
+  ggplot(aes(x = share_label, y = `mean(num_keywords)`)) +
   geom_bar(stat = "identity") +
   ggtitle("") +
   xlab("Popularity Label") +
-  ylab("Mean Ref") +
+  ylab("Mean Keyword") +
   theme(plot.title = element_text(hjust = 0.5)) #BARPLOT 
 ```
 
 ```{r}
-normal_df$data_channel <- rep("Lifestyle", nrow(normal_df))
-normal_df$data_channel[normal_df$data_channel_is_entertainment==1] <- "Entertainment"
-normal_df$data_channel[normal_df$data_channel_is_bus==1] <- "Business"
-normal_df$data_channel[normal_df$data_channel_is_socmed==1] <- "Social Media"
-normal_df$data_channel[normal_df$data_channel_is_tech==1] <- "Tech"
-normal_df$data_channel[normal_df$data_channel_is_world==1] <- "World"
-ggplot(data=normal_df, aes(as.factor(data_channel), log(shares))) + geom_boxplot()
+final_df %>%
+  group_by(share_label) %>%
+  summarise(mean(self_reference_avg_sharess)) %>%
+  ggplot(aes(x = share_label, y = `mean(self_reference_avg_sharess)`)) +
+  geom_bar(stat = "identity") +
+  ggtitle("") +
+  xlab("Popularity Label") +
+  ylab("Mean Keyword") +
+  theme(plot.title = element_text(hjust = 0.5)) #BARPLOT 
 ```
 
 ```{r}
-normal_df$day <- rep("Monday", nrow(normal_df))
-normal_df$day[normal_df$weekday_is_tuesday==1] <- "Tuesday"
-normal_df$day[normal_df$weekday_is_wednesday==1] <- "Wednesday"
-normal_df$day[normal_df$weekday_is_thursday==1] <- "Thursday"
-normal_df$day[normal_df$weekday_is_friday==1] <- "Friday"
-normal_df$day[normal_df$weekday_is_saturday==1] <- "Saturday"
-normal_df$day[normal_df$weekday_is_sunday==1] <- "Sunday"
-
-ggplot(data=normal_df, aes(as.factor(day), log(shares))) + geom_boxplot()
+final_df %>%
+  group_by(share_label) %>%
+  summarise(mean(self_reference_avg_sharess)) %>%
+  ggplot(aes(x = share_label, y = `mean(self_reference_avg_sharess)`)) +
+  geom_bar(stat = "identity") +
+  ggtitle("") +
+  xlab("Popularity Label") +
+  ylab("Mean Keyword") +
+  theme(plot.title = element_text(hjust = 0.5)) #BARPLOT 
 ```
 
 ```{r}
-#looking at the publishing day of the article
+#Sentiment analysis is basically the process of determining the attitude or the emotion of the writer, i.e., whether it is positive or negative or neutral.
+#The sentiment function of textblob returns two properties, polarity, and subjectivity.
+#Polarity is float which lies in the range of [-1,1] where 1 means positive statement and -1 means a negative statement.
+#Subjective sentences generally refer to personal opinion, emotion or judgment whereas objective refers to factual information.
+#Subjectivity is also a float which lies in the range of [0,1].
 
-df_bi<- df%>%
-  mutate(monday=as.factor(weekday_is_monday),
-         tuesday=as.factor(weekday_is_tuesday),
-         wednesday=as.factor(weekday_is_wednesday),
-         thursday=as.factor(weekday_is_thursday),
-         friday=as.factor(weekday_is_friday),
-         saturday=as.factor(weekday_is_saturday),
-         sunday=as.factor(weekday_is_sunday),
-         weekend=as.factor(is_weekend))%>%
-  mutate(day_is_monday=fct_collapse(monday,"yes"= "1","no"= "0"),
-         day_is_tuesday=fct_collapse(tuesday,"yes"= "1","no"= "0"),
-         day_is_wednesday=fct_collapse(wednesday,"yes"= "1","no"= "0"),
-         day_is_thursday=fct_collapse(thursday,"yes"= "1","no"= "0"),
-         day_is_friday=fct_collapse(friday,"yes"= "1","no"= "0"),
-         day_is_saturday=fct_collapse(saturday,"yes"= "1","no"= "0"),
-         day_is_sunday=fct_collapse(sunday,"yes"= "1","no"= "0"),
-         day_is_weekend=fct_collapse(weekend,"yes"= "1","no"= "0"))
+#polarity and subjectivity given shares popularity classes
+
+final_df %>% group_by(share_label) %>% summarise(mean(title_sentiment_polarity)) %>%
+  ggplot(aes(x = share_label, y = `mean(title_sentiment_polarity)`)) +
+  geom_bar(stat = "identity") + ggtitle("Title Sentimental Polarity given Shares Popularity") +
+  xlab("Popularity Label") +
+  ylab("Mean Sentiment Polarity") +
+  theme(plot.title = element_text(hjust = 0.5))#BARPLOT 
+
+final_df %>%
+  group_by(share_label) %>%
+  summarise(mean(title_subjectivity)) %>%
+  ggplot(aes(x = share_label, y = `mean(title_subjectivity)`)) +
+  geom_bar(stat = "identity") +
+  ggtitle("Title Sentimental Subjectivity given Shares Popularity") +
+  xlab("Popularity Label") +
+  ylab("Mean Subjectivity") +
+  theme(plot.title = element_text(hjust = 0.5))#BARPLOT 
 ```
 
+```{r}
+ggplot(data = final_df, aes(data_channel, log(shares))) + geom_boxplot()
+```
+
+```{r}
+ggplot(data = final_df, aes(day, log(shares))) + geom_boxplot()
+```
+
+```{r}
+ggplot(data = final_df, aes(day_is_weekend, log(shares))) + geom_boxplot()
+```
