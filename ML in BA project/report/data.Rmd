@@ -14,7 +14,9 @@ source(here::here("scripts/setup.R"))
 div.blue { background-color:#e6f0ff; border-radius: 5px; padding: 20px;}
 </style>
 <div class = "blue">
+
 First, we will load the data set that record some sets of features about Mashable articles collected in a period of two years.
+
 </div>
 
 <br>
@@ -179,5 +181,80 @@ new <- tibble(normal_df, share_label)
 ```
 
 ```{r}
-final_df <- new %>% select(-url, -timedelta, -data_channel_is_lifestyle, -data_channel_is_entertainment, -data_channel_is_bus, -data_channel_is_socmed, -data_channel_is_tech, -data_channel_is_world, -weekday_is_monday, -weekday_is_tuesday, -weekday_is_wednesday, -weekday_is_thursday, -weekday_is_friday, -weekday_is_saturday, -weekday_is_sunday, -kw_min_min, -kw_max_min, -kw_avg_min, -kw_min_max, -kw_max_max, -kw_avg_max, -kw_min_avg, -kw_max_avg, -kw_avg_avg, -self_reference_min_shares, -self_reference_max_shares, -min_positive_polarity, -max_positive_polarity, -min_negative_polarity, -max_negative_polarity, -num_self_hrefs, -LDA_00, -LDA_01, -LDA_02, -LDA_03, -LDA_04, -abs_title_subjectivity, -abs_title_sentiment_polarity, -avg_positive_polarity, -avg_negative_polarity, -global_rate_negative_words, -global_rate_positive_words)
+new$data_channel <- rep("Lifestyle", nrow(new))
+new$data_channel[new$data_channel_is_entertainment == 1] <-"Entertainment"
+new$data_channel[new$data_channel_is_bus == 1] <- "Business"
+new$data_channel[new$data_channel_is_socmed == 1] <- "Social Media"
+new$data_channel[new$data_channel_is_tech == 1] <- "Tech"
+new$data_channel[new$data_channel_is_world == 1] <- "World"
+
+new$data_channel <- as.factor(new$data_channel)
+```
+
+```{r}
+new$day <- rep("Monday", nrow(new))
+new$day[new$weekday_is_tuesday == 1] <- "Tuesday"
+new$day[new$weekday_is_wednesday == 1] <- "Wednesday"
+new$day[new$weekday_is_thursday == 1] <- "Thursday"
+new$day[new$weekday_is_friday == 1] <- "Friday"
+new$day[new$weekday_is_saturday == 1] <- "Saturday"
+new$day[new$weekday_is_sunday == 1] <- "Sunday"
+
+new$day <- as.factor(new$day)
+```
+
+```{r}
+#looking at the publishing day of the article
+new <- new %>%
+  mutate(weekend=as.factor(is_weekend)) %>%
+  mutate(day_is_weekend=fct_collapse(weekend,"yes"= "1","no"= "0"))
+```
+
+```{r}
+final_df <-
+  new %>% select(
+    -url,
+    -timedelta,
+    -data_channel_is_lifestyle,
+    -data_channel_is_entertainment,
+    -data_channel_is_bus,
+    -data_channel_is_socmed,
+    -data_channel_is_tech,
+    -data_channel_is_world,
+    -weekday_is_monday,
+    -weekday_is_tuesday,
+    -weekday_is_wednesday,
+    -weekday_is_thursday,
+    -weekday_is_friday,
+    -weekday_is_saturday,
+    -weekday_is_sunday,
+    -kw_min_min,
+    -kw_max_min,
+    -kw_avg_min,
+    -kw_min_max,
+    -kw_max_max,
+    -kw_avg_max,
+    -kw_min_avg,
+    -kw_max_avg,
+    -kw_avg_avg,
+    -self_reference_min_shares,
+    -self_reference_max_shares,
+    -min_positive_polarity,
+    -max_positive_polarity,
+    -min_negative_polarity,
+    -max_negative_polarity,
+    -num_self_hrefs,
+    -LDA_00,
+    -LDA_01,
+    -LDA_02,
+    -LDA_03,
+    -LDA_04,
+    -abs_title_subjectivity,
+    -abs_title_sentiment_polarity,
+    -avg_positive_polarity,
+    -avg_negative_polarity,
+    -global_rate_negative_words,
+    -global_rate_positive_words,
+    -weekend
+  )
 ```
