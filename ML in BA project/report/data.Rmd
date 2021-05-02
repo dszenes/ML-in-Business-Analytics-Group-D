@@ -211,6 +211,11 @@ new <- new %>%
 ```
 
 ```{r}
+library(ggcorrplot)
+ggcorrplot(cor(normal_df[2:ncol(normal_df)]))
+```
+
+```{r}
 final_df <-
   new %>% select(
     -url,
@@ -237,6 +242,11 @@ final_df <-
     -kw_min_avg,
     -kw_max_avg,
     -kw_avg_avg,
+    -LDA_00,
+    -LDA_01,
+    -LDA_02,
+    -LDA_03,
+    -LDA_04,
     -self_reference_min_shares,
     -self_reference_max_shares,
     -min_positive_polarity,
@@ -244,11 +254,6 @@ final_df <-
     -min_negative_polarity,
     -max_negative_polarity,
     -num_self_hrefs,
-    -LDA_00,
-    -LDA_01,
-    -LDA_02,
-    -LDA_03,
-    -LDA_04,
     -abs_title_subjectivity,
     -abs_title_sentiment_polarity,
     -avg_positive_polarity,
@@ -258,3 +263,20 @@ final_df <-
     -weekend
   )
 ```
+
+```{r}
+autoplot <- df %>% summarise(date = gsub( ".*(\\d{4}/\\d{1,2}/\\d{1,2}).*", "\\1", df$url)) 
+
+library(fpp3)
+
+tsibble <- cbind(autoplot, y = df$shares)
+articlebyday <- tsibble %>% group_by(date) %>% summarise(n()) #number of articles published by day
+
+articlebyday$date <-  as.Date(articlebyday$date)
+
+articlebyday %>% as_tsibble() %>% autoplot
+```
+
+
+
+
