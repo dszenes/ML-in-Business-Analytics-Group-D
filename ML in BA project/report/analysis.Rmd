@@ -26,20 +26,50 @@ RQ
 
 ```{r}
 library(ggcorrplot)
-ggcorrplot(cor(final_df[1:21]))
+ggcorrplot(cor(final_df[1:19]))
 ```
 
 <br>
 
 ```{r}
+summary(prcomp(final_df[1:18], scale = TRUE))
 library(FactoMineR)
 library(factoextra)
-pop.pca <- PCA(final_df[1:21], ncp = 211, graph = FALSE)
-pop.pca
+pop.pca <- PCA(final_df[1:18], ncp = 21, graph = FALSE)
 
 fviz_pca_var(pop.pca)
 fviz_eig(pop.pca, addlabels = TRUE, ncp=21)
-for (i in 1:5) {
+for (i in 1:6) {
   print(fviz_contrib(pop.pca, choice = "var", axes = i))
 }
+```
+
+```{r}
+set.seed(1996) ## for replication purpose
+
+#split the data set in training/test set
+index.tr <- sample(1:nrow(final_df), replace=FALSE, size=0.75*nrow(final_df))
+final_df.tr <- final_df[index.tr,]
+final_df.te <- final_df[-index.tr,]
+```
+
+```{r}
+library(caret)
+knn <- knn3(data = final_df.tr, share_label ~., k = 5)
+```
+
+```{r}
+final_df.te.pred <- predict(knn, newdata = final_df.te, type = "class")
+table(Pred = final_df.te.pred, Observed = as_vector(final_df.te[, 25]))
+confusionMatrix(data = as.factor(final_df.te.pred),
+                reference = final_df.te$share_label)
+```
+
+```{r}
+library(e1071)
+final_df.svm <- svm(share_label ~ ., data=final_df.tr, kernel="linear")
+final_df.svm.pred <- predict(final_df.svm, newdata = final_df.te)
+
+confusionMatrix(data = as.factor(final_df.svm.pred),
+                reference = final_df.te$share_label)
 ```
