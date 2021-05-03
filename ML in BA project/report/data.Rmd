@@ -30,16 +30,9 @@ df <- as_tibble(df)
 ```{r}
 df2 <- read.csv(file = here::here("data/OnlineNewsPopularity.csv"))
 ```
+
 <br>
 
-```{r}
-datatable(
-  df[1:250, ],
-  rownames = FALSE,
-  filter = "top",
-  options = list(pageLength = 5, scrollX = T)
-)
-```
 
 _Source of the data set:_ [https://archive.ics.uci.edu/ml/datasets/Online+News+Popularity]
 
@@ -50,11 +43,18 @@ div.blue { background-color:#e6f0ff; border-radius: 5px; padding: 20px;}
 
 Data Set Information:
 
-* The articles were published by Mashable (www.mashable.com) and their content as the rights to reproduce it belongs to them. Hence, this dataset does not share the original content but some statistics associated with it. The original content be publicly accessed and retrieved using the provided urls.
+* This dataset is a collection of 39'644 articles published on Mashable, the largest independent news source dedicated to digital culture, social media and technology. A text mining analysis was carried out on each of the articles. Each of the articles obtained various basic statistics from a text mining analysis (the number of words, the general feeling of the article, the theme of the article, ...). The dataset also takes into account the internal details of the document (how many images/videos are in the article, which topic is classified, which day it is classified,...)
 
 * Acquisition date: January 8, 2015
 
-* The estimated relative performance values were estimated by the authors using a Random Forest classifier and a rolling windows as assessment method. See their article for more details on how the relative performance values were set.
+```{r}
+datatable(
+  df[1:50, ],
+  rownames = FALSE,
+  filter = "top",
+  options = list(pageLength = 5, scrollX = T)
+)
+```
 
 <br>
 
@@ -172,10 +172,12 @@ normal_df <- df %>%
 
 ```{r}
 #creating shares popularity classes based on quantiles
-quantile(normal_df$shares, probs = c(seq(0,1, length.out = 25)))
 
-share_label <- cut(normal_df$shares, breaks = c(0, 946, 1700, 7200, 843300))
-levels(share_label) <- c("Poor", "Average", "Good", "Very Good")
+quantile(normal_df$shares, probs = c(seq(0,1, length.out = 5)))
+quantile(normal_df$shares, probs = c(seq(0,1, length.out = 50)))
+
+share_label <- cut(normal_df$shares, breaks = c(0, 1400, 843300))
+levels(share_label) <- c("Unpopular", "Popular")
 
 new <- tibble(normal_df, share_label)
 ```
@@ -260,22 +262,99 @@ final_df <-
     -avg_negative_polarity,
     -global_rate_negative_words,
     -global_rate_positive_words,
-    -weekend
+    -weekend,
+    -shares
   )
 ```
 
 ```{r}
-autoplot <- df %>% summarise(date = gsub( ".*(\\d{4}/\\d{1,2}/\\d{1,2}).*", "\\1", df$url)) 
-
-library(fpp3)
-
-tsibble <- cbind(autoplot, y = df$shares)
-articlebyday <- tsibble %>% group_by(date) %>% summarise(n()) #number of articles published by day
-
-articlebyday$date <-  as.Date(articlebyday$date)
-
-articlebyday %>% as_tsibble() %>% autoplot
+#creating shares popularity classes based on quantiles
+share_classes <- cut(normal_df$shares, breaks = c(0, 1400, 10000, 843300))
+levels(share_classes) <- c("Unpopular", "Popular", "Outstanding")
+new2 <- tibble(normal_df, share_classes)
 ```
+
+```{r}
+new2$data_channel <- rep("Lifestyle", nrow(new2))
+new2$data_channel[new2$data_channel_is_entertainment == 1] <- "Entertainment"
+new2$data_channel[new2$data_channel_is_bus == 1] <- "Business"
+new2$data_channel[new2$data_channel_is_socmed == 1] <- "Social Media"
+new2$data_channel[new2$data_channel_is_tech == 1] <- "Tech"
+new2$data_channel[new2$data_channel_is_world == 1] <- "World"
+
+new2$data_channel <- as.factor(new2$data_channel)
+```
+
+```{r}
+new2$day <- rep("Monday", nrow(new2))
+new2$day[new2$weekday_is_tuesday == 1] <- "Tuesday"
+new2$day[new2$weekday_is_wednesday == 1] <- "Wednesday"
+new2$day[new2$weekday_is_thursday == 1] <- "Thursday"
+new2$day[new2$weekday_is_friday == 1] <- "Friday"
+new2$day[new2$weekday_is_saturday == 1] <- "Saturday"
+new2$day[new2$weekday_is_sunday == 1] <- "Sunday"
+
+new2$day <- as.factor(new2$day)
+```
+
+```{r}
+#looking at the publishing day of the article
+new2 <- new2 %>%
+  mutate(weekend=as.factor(is_weekend)) %>%
+  mutate(day_is_weekend=fct_collapse(weekend,"yes"= "1","no"= "0"))
+```
+
+```{r}
+classes_df <-
+  new2 %>% select(
+    -url,
+    -timedelta,
+    -data_channel_is_lifestyle,
+    -data_channel_is_entertainment,
+    -data_channel_is_bus,
+    -data_channel_is_socmed,
+    -data_channel_is_tech,
+    -data_channel_is_world,
+    -weekday_is_monday,
+    -weekday_is_tuesday,
+    -weekday_is_wednesday,
+    -weekday_is_thursday,
+    -weekday_is_friday,
+    -weekday_is_saturday,
+    -weekday_is_sunday,
+    -kw_min_min,
+    -kw_max_min,
+    -kw_avg_min,
+    -kw_min_max,
+    -kw_max_max,
+    -kw_avg_max,
+    -kw_min_avg,
+    -kw_max_avg,
+    -kw_avg_avg,
+    -LDA_00,
+    -LDA_01,
+    -LDA_02,
+    -LDA_03,
+    -LDA_04,
+    -self_reference_min_shares,
+    -self_reference_max_shares,
+    -min_positive_polarity,
+    -max_positive_polarity,
+    -min_negative_polarity,
+    -max_negative_polarity,
+    -num_self_hrefs,
+    -abs_title_subjectivity,
+    -abs_title_sentiment_polarity,
+    -avg_positive_polarity,
+    -avg_negative_polarity,
+    -global_rate_negative_words,
+    -global_rate_positive_words,
+    -weekend,
+    -shares
+  )
+```
+
+
 
 
 
