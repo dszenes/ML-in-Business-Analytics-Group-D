@@ -187,7 +187,9 @@ final_df %>% group_by(share_label) %>% summarise(mean(title_sentiment_polarity))
   xlab("Popularity Label") +
   ylab("Mean Sentiment Polarity") +
   theme(plot.title = element_text(hjust = 0.5))#BARPLOT 
+```
 
+```{r}
 final_df %>%
   group_by(share_label) %>%
   summarise(mean(title_subjectivity)) %>%
@@ -200,13 +202,13 @@ final_df %>%
 ```
 
 ```{r}
-ggplot(data = final_df, aes(data_channel, log(shares))) + geom_boxplot()
+ggplot(data = new, aes(data_channel, log(shares))) + geom_boxplot()
 ```
 
 ```{r}
-ggplot(data = final_df, aes(day, log(shares))) + geom_boxplot()
+ggplot(data = new, aes(day, log(shares))) + geom_boxplot()
 ```
 
 ```{r}
-ggplot(data = final_df, aes(day_is_weekend, log(shares))) + geom_boxplot()
+ggplot(data = new, aes(day_is_weekend, log(shares))) + geom_boxplot()
 ```

@@ -24,12 +24,13 @@ RQ
 
 <br>
 
+
+## Unsupervised Learning
+
 ```{r}
 library(ggcorrplot)
 ggcorrplot(cor(final_df[1:19]))
 ```
-
-<br>
 
 ```{r}
 summary(prcomp(final_df[1:18], scale = TRUE))
@@ -44,24 +45,22 @@ for (i in 1:6) {
 }
 ```
 
+## Supervised Learning
+
+### Binary Classes
 ```{r}
 set.seed(1996) ## for replication purpose
-
 #split the data set in training/test set
-index.tr <- sample(1:nrow(final_df), replace=FALSE, size=0.75*nrow(final_df))
+index.tr <- createDataPartition(y = final_df$share_label, p = 0.8, list = FALSE)
 final_df.tr <- final_df[index.tr,]
 final_df.te <- final_df[-index.tr,]
 ```
 
 ```{r}
 library(caret)
-knn <- knn3(data = final_df.tr, share_label ~., k = 5)
-```
-
-```{r}
-final_df.te.pred <- predict(knn, newdata = final_df.te, type = "class")
-table(Pred = final_df.te.pred, Observed = as_vector(final_df.te[, 25]))
-confusionMatrix(data = as.factor(final_df.te.pred),
+final_df.knn <- knn3(data = final_df.tr, share_label ~., k = 5)
+final_df.knn.pred <- predict(final_df.knn, newdata = final_df.te, type = "class")
+confusionMatrix(data = as.factor(final_df.knn.pred),
                 reference = final_df.te$share_label)
 ```
 
@@ -69,7 +68,55 @@ confusionMatrix(data = as.factor(final_df.te.pred),
 library(e1071)
 final_df.svm <- svm(share_label ~ ., data=final_df.tr, kernel="linear")
 final_df.svm.pred <- predict(final_df.svm, newdata = final_df.te)
-
 confusionMatrix(data = as.factor(final_df.svm.pred),
                 reference = final_df.te$share_label)
+```
+
+```{r}
+library(rpart)
+library(rpart.plot)
+final_df.tree <- rpart(share_label ~ ., data=final_df.tr)
+rpart.plot(final_df.tree)
+final_df.tree.pred <- predict(final_df.tree, newdata = final_df.te, type = "class")
+confusionMatrix(data = as.factor(final_df.svm.pred),
+                reference = final_df.te$share_label)
+```
+
+```{r}
+library(randomForest)
+rf <- randomForest(share_label ~ ., data = final_df.tr)
+rf.te.pred <- predict(rf, newdata = final_df.te, type = "class")
+confusionMatrix(data = as.factor(rf.te.pred),
+                reference = final_df.te$share_label)
+```
+
+### Multi-Classes : Searching for outstanding popularity
+```{r}
+set.seed(1996) ## for replication purpose
+#split the data set in training/test set
+c.index.tr <- createDataPartition(y = classes_df$share_classes, p = 0.8, list = FALSE)
+classes_df.tr <- classes_df[c.index.tr,]
+classes_df.te <- classes_df[-c.index.tr,]
+```
+
+```{r}
+df.tr.unpop <- filter(classes_df.tr, share_classes =="Unpopular")
+df.tr.pop <- filter(classes_df.tr, share_classes =="Popular")
+df.tr.out <- filter(classes_df.tr, share_classes =="Outstanding")
+
+n.out <- min(table(classes_df.tr$share_classes)) #1582
+
+index.unpop <- sample(size=n.out, x=1:nrow(df.tr.unpop), replace=FALSE) ## sub-sample 840 instances from the "No"
+index.pop <- sample(size=n.out, x=1:nrow(df.tr.pop), replace=FALSE) ## sub-sample 840 instances from the "No"
+
+df.tr.subs <- data.frame(rbind(df.tr.out, df.tr.unpop[index.unpop,], df.tr.pop[index.pop,]))
+table(df.tr.subs$share_classes)
+```
+
+```{r}
+library(caret)
+class_df.knn <- knn3(data = df.tr.subs, share_classes ~., k = 5)
+class_df.knn.pred <- predict(class_df.knn, newdata = classes_df.te, type = "class")
+confusionMatrix(data = as.factor(class_df.knn.pred),
+                reference = classes_df.te$share_classes)
 ```
