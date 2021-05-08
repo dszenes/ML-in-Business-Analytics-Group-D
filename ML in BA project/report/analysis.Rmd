@@ -78,7 +78,7 @@ library(rpart.plot)
 final_df.tree <- rpart(share_label ~ ., data=final_df.tr)
 rpart.plot(final_df.tree)
 final_df.tree.pred <- predict(final_df.tree, newdata = final_df.te, type = "class")
-confusionMatrix(data = as.factor(final_df.svm.pred),
+confusionMatrix(data = as.factor(final_df.tree.pred),
                 reference = final_df.te$share_label)
 ```
 
@@ -88,6 +88,17 @@ rf <- randomForest(share_label ~ ., data = final_df.tr)
 rf.te.pred <- predict(rf, newdata = final_df.te, type = "class")
 confusionMatrix(data = as.factor(rf.te.pred),
                 reference = final_df.te$share_label)
+
+```
+
+Since random forest seems to be the best model, we will do a cross-validation on it to verify the accuracy
+
+```{r}
+
+library('rfUtilities')
+rf.cv <- rf.crossValidation(rf, final_df.tr[,-19], p=0.10, n=10, ntree=500)
+
+
 ```
 
 ### Multi-Classes : Searching for outstanding popularity
