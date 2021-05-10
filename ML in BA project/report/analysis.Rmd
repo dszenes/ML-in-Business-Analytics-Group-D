@@ -178,3 +178,44 @@ class_df.knn.pred <- predict(class_df.knn, newdata = classes_df.te, type = "clas
 confusionMatrix(data = as.factor(class_df.knn.pred),
                 reference = classes_df.te$share_classes)
 ```
+
+
+
+```{r}
+# Variable importance random forest
+library(randomForest)
+rf <- randomForest(share_label ~ ., data = final_df.tr)
+
+varImpPlot(rf)
+
+# some minutes to run but it works
+
+# Gini coefficient is an impurity measure. The interpretation of the plot is the following: on the top the most important variables that contribute the most to decrease the node impurity. self_reference.avg_sharess is the most important variable and "day_is_weekend" is the less important.
+
+# variable importance CART
+# without shuffle 
+library(rpart)
+library(rpart.plot)
+final_df.tree <- rpart(share_label ~ ., data=final_df.tr)
+rpart.plot(final_df.tree)
+final_df.tree.pred <- predict(final_df.tree, newdata = final_df.te, type = "class")
+confusionMatrix(data = as.factor(final_df.tree.pred),
+                reference = final_df.te$share_label)
+
+# shuffle on self_reference_avg_sharess
+
+set.seed(143)
+
+final_df.te_shuffle <- final_df.te
+final_df.te_shuffle$self_reference_avg_sharess <- sample(final_df.te_shuffle$self_reference_avg_sharess)
+
+final_df.tree.pre_shuffle <- predict(final_df.tree, newdata = final_df.te_shuffle, type = "class")
+
+confusionMatrix(data = as.factor(final_df.tree.pre_shuffle), reference = final_df.te$share_label)
+
+# Looking at the output we see that the accuracy change from 0.613 to 0.566 ( the latter is in the shuffle procedure)
+
+```
+
+
+
