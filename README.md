@@ -11,6 +11,9 @@
 **One unsupervised analysis:**
 - clustering and/or dimension reduction.
 
+** Extra **
+- Implementing variable importance
+
 
 
 *Need to be done:*

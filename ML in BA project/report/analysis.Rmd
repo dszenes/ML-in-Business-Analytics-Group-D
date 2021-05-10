@@ -62,6 +62,53 @@ final_df.knn <- knn3(data = final_df.tr, share_label ~., k = 5)
 final_df.knn.pred <- predict(final_df.knn, newdata = final_df.te, type = "class")
 confusionMatrix(data = as.factor(final_df.knn.pred),
                 reference = final_df.te$share_label)
+                
+                
+                
+
+#  Tuning of hyperparameters 
+
+
+# Tuning of hyperparameters using grid search
+
+grid <- expand.grid(k = c(1,10,50,100,150,200))
+trctr <- trainControl(method = "cv", number = 10)
+set.seed(1996)
+Doc.knn <- train(share_label~., data = final_df.tr, method = "knn",
+                 trControl= trctr,
+                 tuneGrid = grid) 
+
+
+# too much time to run
+# try another method:
+
+set.seed(1996)
+ctrl <- trainControl(method = "repeatedcv", repeats = 3)
+Fit <- train(share_label~., data = final_df.tr, method = "knn", trControl = ctrl, preProcess = c("center","scale"), tuneLength = 10)
+
+Fit
+# too much time to run too...
+# how to solve this problem?
+
+# Try to change manually the k and seeing the results:
+# k = 10
+
+final_df.knn2 <- knn3(data = final_df.tr, share_label ~., k = 10)
+final_df.knn.pred2 <- predict(final_df.knn2, newdata = final_df.te, type = "class")
+confusionMatrix(data = as.factor(final_df.knn.pred2),
+                reference = final_df.te$share_label)
+
+# slightly better accuracy
+
+# try with k = 100
+
+final_df.knn3 <- knn3(data = final_df.tr, share_label ~., k = 100)
+final_df.knn.pred3 <- predict(final_df.knn3, newdata = final_df.te, type = "class")
+confusionMatrix(data = as.factor(final_df.knn.pred3),
+                reference = final_df.te$share_label)
+                
+# slightely better accuracy but the problem is that the improvement is almost useless. Accuracy is too low
+                
 ```
 
 ```{r}
