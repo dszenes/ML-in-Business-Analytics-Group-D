@@ -142,6 +142,14 @@ final_df.svm_Radial_Grid <- train(share_label ~., data = df.tr, method = "svmRad
 ```
 
 ```{r}
+library(naivebayes)
+final_df.nb <- naive_bayes(share_label ~ ., data = final_df.tr, kernel = TRUE)
+final_df.nb.pred <- predict(final_df.nb, newdata = final_df.te)
+confusionMatrix(data = as.factor(final_df.nb.pred),
+                reference = final_df.te$share_label)
+```
+
+```{r}
 library(rpart)
 library(rpart.plot)
 final_df.tree <- rpart(share_label ~ ., data=final_df.tr)
