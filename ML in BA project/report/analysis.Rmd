@@ -208,10 +208,10 @@ table(df.tr.subs$share_classes)
 ```
 
 ```{r}
-library(caret)
-class_df.knn <- knn3(data = df.tr.subs, share_classes ~., k = 5)
-class_df.knn.pred <- predict(class_df.knn, newdata = classes_df.te, type = "class")
-confusionMatrix(data = as.factor(class_df.knn.pred),
+library(randomForest)
+rf <- randomForest(share_classes ~ ., data = df.tr.subs)
+rf.te.pred <- predict(rf, newdata = classes_df.te, type = "class")
+confusionMatrix(data = as.factor(rf.te.pred),
                 reference = classes_df.te$share_classes)
 ```
 
