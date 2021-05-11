@@ -117,6 +117,28 @@ final_df.svm <- svm(share_label ~ ., data=final_df.tr, kernel="linear")
 final_df.svm.pred <- predict(final_df.svm, newdata = final_df.te)
 confusionMatrix(data = as.factor(final_df.svm.pred),
                 reference = final_df.te$share_label)
+
+#Trying a radial basis kernel
+final_df.svm_radial <- svm(share_label ~ ., data=final_df.tr, kernel="radial")
+final_df.svm.pred_radial <- predict(final_df.svm_radial, newdata = final_df.te)
+confusionMatrix(data = as.factor(final_df.svm.pred_radial),
+                reference = final_df.te$share_label)
+
+#Tuning the parameters
+trctrl <- trainControl(method = "cv", number=10)
+set.seed(143)
+final_df.svm_linear <- train(share_label ~., data = final_df.tr, method = "svmLinear",trControl=trctrl)
+
+grid <- expand.grid(C = c(0.01, 0.1, 1, 10, 100, 1000))
+grid
+set.seed(143)
+final_df.svm_Linear_Grid <- train(share_label ~., data = df.tr, method = "svmLinear",trControl=trctrl,tuneGrid = grid)
+
+grid_radial <- expand.grid(sigma = c(0.01, 0.02, 0.05, 0.1),
+                           C = c(1, 10, 100, 500, 1000))
+grid_radial
+set.seed(143)
+final_df.svm_Radial_Grid <- train(share_label ~., data = df.tr, method = "svmRadial",trControl=trctrl,tuneGrid = grid_radial)
 ```
 
 ```{r}
@@ -127,6 +149,12 @@ rpart.plot(final_df.tree)
 final_df.tree.pred <- predict(final_df.tree, newdata = final_df.te, type = "class")
 confusionMatrix(data = as.factor(final_df.tree.pred),
                 reference = final_df.te$share_label)
+
+#Trying if pruning is needed
+
+plotcp(final_df.tree)
+
+#No need to prune
 ```
 
 ```{r}
