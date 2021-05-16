@@ -28,14 +28,11 @@ RQ
 ## Unsupervised Learning
 
 ```{r}
-library(ggcorrplot)
-ggcorrplot(cor(final_df[1:19]))
+ggcorrplot(cor(final_df[1:18]))
 ```
 
 ```{r}
 summary(prcomp(final_df[1:18], scale = TRUE))
-library(FactoMineR)
-library(factoextra)
 pop.pca <- PCA(final_df[1:18], ncp = 21, graph = FALSE)
 
 fviz_pca_var(pop.pca)
@@ -51,175 +48,175 @@ for (i in 1:6) {
 ```{r}
 set.seed(1996) ## for replication purpose
 #split the data set in training/test set
-index.tr <- createDataPartition(y = final_df$share_label, p = 0.8, list = FALSE)
+index.tr <-
+  createDataPartition(y = final_df$share_label,
+                      p = 0.8, #trainset = 80% of the total dataset
+                      list = FALSE)
 final_df.tr <- final_df[index.tr,]
 final_df.te <- final_df[-index.tr,]
 ```
 
 ```{r}
-library(caret)
-final_df.knn <- knn3(data = final_df.tr, share_label ~., k = 5)
-final_df.knn.pred <- predict(final_df.knn, newdata = final_df.te, type = "class")
+trControl <- trainControl(method  = "cv",
+                          number  = 5) #5 fold Cross-Validation
+```
+
+```{r}
+###KNN 
+fit <- train(share_label ~ .,
+             #trying to predict share_label with all other features
+             method     = "knn",
+             tuneGrid   = expand.grid(k = 1:10), #tuning K hyperparameters
+             trControl  = trControl,
+             metric     = "Accuracy",
+             data       = final_df)
+#k=9 maximizes our Kappa & Accuracy
+
+final_df.knn <- knn3(data = final_df.tr,
+                     share_label ~.,
+                     k = 9)
+
+final_df.knn.pred <- predict(final_df.knn,
+                             newdata = final_df.te,
+                             type = "class")
+
 confusionMatrix(data = as.factor(final_df.knn.pred),
                 reference = final_df.te$share_label)
-                
-                
-                
-
-#  Tuning of hyperparameters 
+```
 
 
-# Tuning of hyperparameters using grid search
-
-grid <- expand.grid(k = c(1,10,50,100,150,200))
-trctr <- trainControl(method = "cv", number = 10)
-set.seed(1996)
-Doc.knn <- train(share_label~., data = final_df.tr, method = "knn",
-                 trControl= trctr,
-                 tuneGrid = grid) 
-
-
-# too much time to run
-# try another method:
-
-set.seed(1996)
-ctrl <- trainControl(method = "repeatedcv", repeats = 3)
-Fit <- train(share_label~., data = final_df.tr, method = "knn", trControl = ctrl, preProcess = c("center","scale"), tuneLength = 10)
-
-Fit
-# too much time to run too...
-# how to solve this problem?
-
-# Try to change manually the k and seeing the results:
-# k = 10
-
-final_df.knn2 <- knn3(data = final_df.tr, share_label ~., k = 10)
-final_df.knn.pred2 <- predict(final_df.knn2, newdata = final_df.te, type = "class")
-confusionMatrix(data = as.factor(final_df.knn.pred2),
-                reference = final_df.te$share_label)
-
-# slightly better accuracy
-
-# try with k = 100
-
-final_df.knn3 <- knn3(data = final_df.tr, share_label ~., k = 100)
-final_df.knn.pred3 <- predict(final_df.knn3, newdata = final_df.te, type = "class")
-confusionMatrix(data = as.factor(final_df.knn.pred3),
-                reference = final_df.te$share_label)
-                
-# slightely better accuracy but the problem is that the improvement is almost useless. Accuracy is too low
-                
+```{r}
+#as our RAM/CPU struggles while hyper-parameter tuning, we've chosen to sample a part of our data in order to have less computational effort
+sub_hyp <- sample(nrow(final_df), 5000)
+sub_hyp <- final_df[sub_hyp,]
 ```
 
 ```{r}
-library(e1071)
-final_df.svm <- svm(share_label ~ ., data=final_df.tr, kernel="linear")
-final_df.svm.pred <- predict(final_df.svm, newdata = final_df.te)
-confusionMatrix(data = as.factor(final_df.svm.pred),
-                reference = final_df.te$share_label)
+#SVM
+hyperparameter_svm <- expand.grid(sigma = c(0.01, 0.02, 0.05, 0.1),
+                           C = seq(0,1,0.25))
+svm_hyperpara_train <- train(share_label ~ .,
+                         data = sub_hyp,
+                         method = "svmRadial",
+                         #radial instead of linear since
+                         #we assume no linear relationship
+                         trControl = trControl,
+                         tuneGrid = hyperparameter_svm)
+#The final values used for the model were sigma = 0.02 and C = 0.75.
 
-#Trying a radial basis kernel
-final_df.svm_radial <- svm(share_label ~ ., data=final_df.tr, kernel="radial")
-final_df.svm.pred_radial <- predict(final_df.svm_radial, newdata = final_df.te)
+
+final_df.svm_radial <- #train our radial kernel with sigma = 0.02 and C = 0.75
+  svm(share_label ~ .,
+      data = final_df.tr,
+      kernel = "radial",
+      tuneGrid = expand.grid(C = 0.75,
+                             sigma = 0.02))
+
+final_df.svm.pred_radial <- predict(final_df.svm_radial,
+                                    newdata = final_df.te)
+
 confusionMatrix(data = as.factor(final_df.svm.pred_radial),
                 reference = final_df.te$share_label)
-
-#Tuning the parameters
-trctrl <- trainControl(method = "cv", number=10)
-set.seed(143)
-final_df.svm_linear <- train(share_label ~., data = final_df.tr, method = "svmLinear",trControl=trctrl)
-
-grid <- expand.grid(C = c(0.01, 0.1, 1, 10, 100, 1000))
-grid
-set.seed(143)
-final_df.svm_Linear_Grid <- train(share_label ~., data = df.tr, method = "svmLinear",trControl=trctrl,tuneGrid = grid)
-
-grid_radial <- expand.grid(sigma = c(0.01, 0.02, 0.05, 0.1),
-                           C = c(1, 10, 100, 500, 1000))
-grid_radial
-set.seed(143)
-final_df.svm_Radial_Grid <- train(share_label ~., data = df.tr, method = "svmRadial",trControl=trctrl,tuneGrid = grid_radial)
 ```
 
 ```{r}
-library(naivebayes)
-final_df.nb <- naive_bayes(share_label ~ ., data = final_df.tr, kernel = TRUE)
-final_df.nb.pred <- predict(final_df.nb, newdata = final_df.te)
+#NAIVE BAYES without hyperparameter tuning
+#since it only achieve a 0.177, we think that other algo can do better
+final_df.nb <- naive_bayes(share_label ~ .,
+                           data = final_df.tr,
+                           kernel = TRUE)
+
+final_df.nb.pred <- predict(final_df.nb,
+                            newdata = final_df.te)
+
 confusionMatrix(data = as.factor(final_df.nb.pred),
                 reference = final_df.te$share_label)
 ```
 
 ```{r}
-library(rpart)
-library(rpart.plot)
-final_df.tree <- rpart(share_label ~ ., data=final_df.tr)
+final_df.tree <- rpart(share_label ~ .,
+                       data = final_df.tr)
 rpart.plot(final_df.tree)
-final_df.tree.pred <- predict(final_df.tree, newdata = final_df.te, type = "class")
+
+final_df.tree.pred <- predict(final_df.tree,
+                              newdata = final_df.te,
+                              type = "class")
+
 confusionMatrix(data = as.factor(final_df.tree.pred),
                 reference = final_df.te$share_label)
 
 #Trying if pruning is needed
-
 plotcp(final_df.tree)
-
 #No need to prune
 ```
 
 ```{r}
-library(randomForest)
-rf <- randomForest(share_label ~ ., data = final_df.tr)
-rf.te.pred <- predict(rf, newdata = final_df.te, type = "class")
+# HYPERPARAMETER TUNING FOR RF
+# THIS CODE WORD PERFECTLY BUT TAKES 20 MIN TO RUN
+# WE GIVE YOU THE OUTPUT OF THIS RUN
+# IN ORDER TO DECREASE KNIT TIME, WE REMOVE THE CODE AND CONSIDER IT AS TEST
+
+
+
+#hyperparameter_rf <-
+#  train(
+#    share_label ~ .,
+#    data = sub_hyp,
+#    method = "rf",
+#    metric = "Accuracy",
+#    tuneGrid = expand.grid(.mtry = seq(1,5, 0.5)),
+#    trControl = trControl
+#  )
+
+#Random Forest 
+
+#10000 samples
+#   21 predictor
+#    2 classes: 'Unpopular', 'Popular' 
+
+#No pre-processing
+#Resampling: Cross-Validated (5 fold) 
+#Summary of sample sizes: 8000, 7999, 8001, 8000, 8000 
+#Resampling results across tuning parameters:
+
+#  mtry  Accuracy  Kappa
+#  1.0   0.626     0.247
+#  1.5   0.639     0.275
+#  2.0   0.639     0.277
+#  2.5   0.641     0.280
+#  3.0   0.633     0.265
+#  3.5   0.636     0.271
+#  4.0   0.633     0.266
+#  4.5   0.634     0.266
+#  5.0   0.634     0.268
+
+#Accuracy was used to select the optimal model using the largest value.
+#The final value used for the model was mtry = 2.5.
+```
+
+
+```{r}
+rf <- train(share_label~.,
+            data = final_df.tr,
+            method = "rf",
+            metric = "Accuracy",
+            tuneGrid = expand.grid(.mtry = 2.5),
+            #use the hyperparameter that we've find in
+            #the hyperparameter tuning (chunk code line 153-195)
+            trControl = trControl)
+
+rf.te.pred <- predict(rf,
+                      newdata = final_df.te,
+                      type = "raw")
+
 confusionMatrix(data = as.factor(rf.te.pred),
                 reference = final_df.te$share_label)
-
+# Best Kappa so far: 0.274
+# Best Balanced Accuracy so far : 0.637 
 ```
-
-Since random forest seems to be the best model, we will do a cross-validation on it to verify the accuracy
-
-```{r}
-
-library('rfUtilities')
-rf.cv <- rf.crossValidation(rf, final_df.tr[,-19], p=0.10, n=10, ntree=500)
-
-
-```
-
-### Multi-Classes : Searching for outstanding popularity
-```{r}
-set.seed(1996) ## for replication purpose
-#split the data set in training/test set
-c.index.tr <- createDataPartition(y = classes_df$share_classes, p = 0.8, list = FALSE)
-classes_df.tr <- classes_df[c.index.tr,]
-classes_df.te <- classes_df[-c.index.tr,]
-```
-
-```{r}
-df.tr.unpop <- filter(classes_df.tr, share_classes =="Unpopular")
-df.tr.pop <- filter(classes_df.tr, share_classes =="Popular")
-df.tr.out <- filter(classes_df.tr, share_classes =="Outstanding")
-
-n.out <- min(table(classes_df.tr$share_classes)) #1582
-
-index.unpop <- sample(size=n.out, x=1:nrow(df.tr.unpop), replace=FALSE) ## sub-sample 840 instances from the "No"
-index.pop <- sample(size=n.out, x=1:nrow(df.tr.pop), replace=FALSE) ## sub-sample 840 instances from the "No"
-
-df.tr.subs <- data.frame(rbind(df.tr.out, df.tr.unpop[index.unpop,], df.tr.pop[index.pop,]))
-table(df.tr.subs$share_classes)
-```
-
-```{r}
-library(randomForest)
-rf <- randomForest(share_classes ~ ., data = df.tr.subs)
-rf.te.pred <- predict(rf, newdata = classes_df.te, type = "class")
-confusionMatrix(data = as.factor(rf.te.pred),
-                reference = classes_df.te$share_classes)
-```
-
-
 
 ```{r}
 # Variable importance random forest
-library(randomForest)
 rf <- randomForest(share_label ~ ., data = final_df.tr)
 
 varImpPlot(rf)
@@ -230,15 +227,13 @@ varImpPlot(rf)
 
 # variable importance CART
 # without shuffle 
-library(rpart)
-library(rpart.plot)
 final_df.tree <- rpart(share_label ~ ., data=final_df.tr)
 rpart.plot(final_df.tree)
 final_df.tree.pred <- predict(final_df.tree, newdata = final_df.te, type = "class")
 confusionMatrix(data = as.factor(final_df.tree.pred),
                 reference = final_df.te$share_label)
 
-# shuffle on self_reference_avg_sharess
+#shuffle on self_reference_avg_sharess
 
 set.seed(143)
 
@@ -250,7 +245,53 @@ final_df.tree.pre_shuffle <- predict(final_df.tree, newdata = final_df.te_shuffl
 confusionMatrix(data = as.factor(final_df.tree.pre_shuffle), reference = final_df.te$share_label)
 
 # Looking at the output we see that the accuracy change from 0.613 to 0.566 ( the latter is in the shuffle procedure)
+```
 
+
+### Multi-Classes : Searching for outstanding popularity
+```{r}
+set.seed(1996) ## for replication purpose
+#split the data set in training/test set
+c.index.tr <- createDataPartition(y = classes_df$share_classes,
+                                  p = 0.8,
+                                  list = FALSE)
+classes_df.tr <- classes_df[c.index.tr,]
+classes_df.te <- classes_df[-c.index.tr,]
+```
+
+```{r}
+df.tr.unpop <- filter(classes_df.tr, share_classes == "Unpopular")
+df.tr.pop <- filter(classes_df.tr, share_classes == "Popular")
+df.tr.out <- filter(classes_df.tr, share_classes == "Outstanding")
+
+n.out <- min(table(classes_df.tr$share_classes)) #1582
+
+index.unpop <- sample(size=n.out, x=1:nrow(df.tr.unpop), replace=FALSE) ## sub-sample 840 instances from the "No"
+index.pop <- sample(size=n.out, x=1:nrow(df.tr.pop), replace=FALSE) ## sub-sample 840 instances from the "No"
+
+df.tr.subs <- data.frame(rbind(df.tr.out,
+                               df.tr.unpop[index.unpop, ],
+                               df.tr.pop[index.pop, ]))
+table(df.tr.subs$share_classes)
+```
+
+```{r}
+rf_outstanding <- train(share_classes~.,
+            data = df.tr.subs,
+            method = "rf",
+            metric = "Accuracy",
+            tuneGrid = expand.grid(.mtry = 2.5),
+            #use the hyperparameter that we've find in
+            #the hyperparameter tuning (chunk code line 153-195)
+            trControl = trControl)
+
+rf.te.pred <- predict(rf_outstanding,
+                      newdata = classes_df.te,
+                      type = "raw")
+
+confusionMatrix(data = as.factor(rf.te.pred),
+                reference = classes_df.te$share_classes)
+# Poor Kappa: 0.194
 ```
 
 
