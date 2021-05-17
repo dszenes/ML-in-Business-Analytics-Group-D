@@ -296,3 +296,14 @@ confusionMatrix(data = as.factor(rf.te.pred),
 
 
 
+
+
+```{r}
+library(randomForest)
+rf <- randomForest(share_classes ~ ., data = df.tr.subs)
+rf.te.pred <- predict(rf, newdata = classes_df.te, type = "class")
+confusionMatrix(data = as.factor(rf.te.pred),
+                reference = classes_df.te$share_classes)
+
+```
+
