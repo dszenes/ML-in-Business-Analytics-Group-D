@@ -4,6 +4,54 @@
 source(here::here("scripts/setup.R"))
 ```
 
+## Text to be integretad into this rmd
+
+Section 2: Data description
+
+In this dataset, each instance is an article on Mashable. The number of shares, our variable of interest, is given to us in the form for of a simple numerical value. We have decided in this case to transform this variable into a categorical variable with three levels: Unpopular, Popular and Outstanding, which are respectively articles with less than 1400 or less, between 1400 and 10600, and more than 10600 shares. These dividing lines were based on the distribution of the number of shares, namely the median point which determines Unpopular articles, while Outstanding articles are in the top 5 %. 
+Compared to previous research on this dataset [1,2], we have decided to limit the number of variables we use to the ones that we think are the most interpretable and thus create a model that is can be more easily generalized and used by other companies that want to promote their online content. We have, for instance, decided not to use the results of a topic modelling analysis called the Latent Dirichlet allocation (LDA), because this is a rather complicated technique which is difficult to interpret to people not familiar with natural language processing. We have also decided to eliminate some highly intercorrelated variables, such as the minimum and maximum of the shares of other Mashable articles referenced in the content of the current instance, keeping only the average value for this variable.
+The predictive variables that we have decided to keep in their original form can be sorted into a few categories:
+
+
+Numeric integer values:
+
+- n_tokens_title: Number of words in the title
+- n_tokens_content: Number of words in the content
+- num_hrefs: Number of links
+- num_imgs: Number of images
+- num_videos: Number of videos
+- num_keywords: Number of keywords (linked subjects that define the article) in the metadata
+- self_reference_avg_sharess: Avg. shares of referenced articles in Mashable (rounded)
+
+Numeric real values:
+
+- average_token_length: Average length of the words in the content
+
+Rates, numerical scores between [0:1] :
+
+- n_unique_tokens: Rate of unique words in the content
+- n_non_stop_unique_tokens: Rate of unique non-stop words in the content
+- global_subjectivity: Text subjectivity
+- rate_positive_words: Rate of positive words among non-neutral tokens
+- rate_negative_words: Rate of negative words among non-neutral tokens
+- title_subjectivity: Title subjectivity
+
+
+Rates, numerical scores between [-1:1] :
+
+- global_sentiment_polarity: Text sentiment polarity
+- title_sentiment_polarity: Title polarity
+
+As their name implies, subjectivity and polarity are NLP techniques that measure levels of subjective opinions and negative/positive emotions expressed respectively, which is why they have different scales. Rates of negative and positive words are measured among the tokens that express emotion (non-neutral), and thus add up to one.
+
+In addition, there are some dummy variables that we have changed into categorical levels of different levels in order to reduce the number of predictors:
+
+- data_channel : 6 levels (Lifestyle, Entertainment, Business, Social Media, Tech, World)
+- day: 7 levels (Monday, Tuesday, Wednesday, Thursday, Friday, Saturday Sunday)
+- day_is_weekend: 2 levels(yes,no)
+
+
+
 ## Raw Data Set
 
 <br>
@@ -222,6 +270,7 @@ final_df <-
   new %>% select(
     -url,
     -timedelta,
+    -n_non_stop_words,
     -data_channel_is_lifestyle,
     -data_channel_is_entertainment,
     -data_channel_is_bus,
@@ -235,6 +284,7 @@ final_df <-
     -weekday_is_friday,
     -weekday_is_saturday,
     -weekday_is_sunday,
+    -is_weekend,
     -kw_min_min,
     -kw_max_min,
     -kw_avg_min,
@@ -268,8 +318,14 @@ final_df <-
 ```
 
 ```{r}
+#we want create an extra category for an exceptionally high number of shares, we chose a number that will define the 5 % most popular articles
+quantile(normal_df$shares, probs = 0.95)
+quantile(normal_df$shares, probs = 0.5)
+```
+
+```{r}
 #creating shares popularity classes based on quantiles
-share_classes <- cut(normal_df$shares, breaks = c(0, 1400, 10000, 843300))
+share_classes <- cut(normal_df$shares, breaks = c(0, 1400, 10600, 843300))
 levels(share_classes) <- c("Unpopular", "Popular", "Outstanding")
 new2 <- tibble(normal_df, share_classes)
 ```
@@ -309,6 +365,8 @@ classes_df <-
   new2 %>% select(
     -url,
     -timedelta,
+    -is_weekend,
+    -n_non_stop_words,
     -data_channel_is_lifestyle,
     -data_channel_is_entertainment,
     -data_channel_is_bus,
