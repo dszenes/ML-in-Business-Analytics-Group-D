@@ -23,7 +23,6 @@
 - Same for models
 - try to CV with few models
 - Hyperparameters tuning
-- Outstanding popularity analysis
-- Check if we can improve the accuracy of the binary model
+- Outstanding popularity analysis (DONE)
 - HTML presentation
 - Conclusion : Interpretation and results exploitation

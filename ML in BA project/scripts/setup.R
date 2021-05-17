@@ -6,9 +6,10 @@
 packages <- c(
   "here", # for the project's organization
   "tidyverse", "lubridate", "reshape2", # for wrangling
-  "ggrepel", "gghighlight", "patchwork", "maps", "scales", "highcharter", "caret" ,# for plotting
+  "ggrepel", "gghighlight", "patchwork", "scales", "highcharter" ,# for plotting
+  "ggcorrplot", "FactoMineR", "factoextra", "caret", "e1071", "naivebayes", "rpart", "rpart.plot", "randomForest", "rfUtilities", #ML packages
   "knitr", "kableExtra", "bookdown", "rmarkdown", "DT", # for the report
-  "ggthemes" #for vizualiozation
+  "ggthemes" #for vizualization
 )
 purrr::walk(packages, library, character.only = TRUE)
 
@@ -50,8 +51,8 @@ kable_maker <- function(a_tibble, ...) {
   a_tibble %>%
     kable(longtable = TRUE,align='l',...) %>%
     kable_styling(bootstrap_options = c("striped", "hover")) %>%
-    `if`(nrow(a_tibble) > 5, (.) %>% scroll_box(height = "260px"), .) %>% 
-    `if`(ncol(a_tibble) > 20, (.) %>% scroll_box(height = "200px"), .)
+    `if`(nrow(a_tibble) > 5, (.) %>% scroll_box(height = "400px"), .) %>% 
+    `if`(ncol(a_tibble) > 20, (.) %>% scroll_box(height = "400px"), .)
 }
 
 
