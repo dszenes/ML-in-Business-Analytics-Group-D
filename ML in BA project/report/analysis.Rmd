@@ -178,12 +178,3 @@ class_df.knn.pred <- predict(class_df.knn, newdata = classes_df.te, type = "clas
 confusionMatrix(data = as.factor(class_df.knn.pred),
                 reference = classes_df.te$share_classes)
 ```
-
-```{r}
-library(randomForest)
-rf <- randomForest(share_classes ~ ., data = df.tr.subs)
-rf.te.pred <- predict(rf, newdata = classes_df.te, type = "class")
-confusionMatrix(data = as.factor(rf.te.pred),
-                reference = classes_df.te$share_classes)
-
-```
