@@ -27,24 +27,54 @@ RQ
 
 ## Unsupervised Learning
 
+Start the unsupervised learning by giving an overlook to the correlation between variables. it is important to look at the correlation structure in order to take decisions about dimension reductions.
+
 ```{r}
-ggcorrplot(cor(final_df[1:18]))
+library(ggcorrplot)
+
+ggcorrplot(cor(final_df[1:16]))
+
+
 ```
+We can notice that there are some variable highly negative correlated between them, such as rate_negative_words and rate_positive_words and n_unique_token together with n_token_content. Rather positively correlated are rate_positive_words and global_sentiment polarity. Color gradation gives us the information about the positive/negative correlation intensity.
+
+
+### Principal Component Analysis (PCA)
+
+After inspecting the correlation structure, we compute the Principal component analysis.
+in order to give the same importance to each variable we scale the data first, and then compute the PCA.
 
 ```{r}
-summary(prcomp(final_df[1:18], scale = TRUE))
-pop.pca <- PCA(final_df[1:18], ncp = 21, graph = FALSE)
 
+?PCA
+summary(prcomp(final_df[1:16], scale = TRUE))
+pop.pca <- PCA(final_df[1:16], ncp = 21, graph = FALSE)
 fviz_pca_var(pop.pca)
 fviz_eig(pop.pca, addlabels = TRUE, ncp=21)
 for (i in 1:6) {
   print(fviz_contrib(pop.pca, choice = "var", axes = i))
 }
 ```
+Notice that the first dimention account for 18.8% of the total variance, and the second dimention for 17.6%. Since the third component the explained variance is halved with respect to the second component.
+
+* first component:
+Mainly positively correlated with n_non_stop_unique_token and n_unique_token and slightly positively correlated with rate_positive_words; negatively correlated with n_token_content, slightly negatively correlated with rate_negative_words.
+
+* second component:
+Mainly positively correlated with rate_positive_words and global_sentiment_polarity; negatively correlated with rate_negative_words. Slightly negatively correlated also with n_non_stop_unique_token and n_unique_token.
+
 
 ## Supervised Learning
 
+In this section, we fit different models in order to predict the categorical variable: share_label.
+
+We conducted two supervised learnings: one for binary class and one for multi class. In the binary class analysis we predict the level of popularity ( given by the variable share_label) that can be: Popular or unpopular.
+Whereas, in the multi-classes we predict the share_class variable that can assume one more labels of popularity which is: Outstanding. So in total: Unpopular, popular and outstanding.
+
 ### Binary Classes
+
+As always, we split the dataset in 2 subgroups: the training set and the test set. We decided to made a training set that accounts for the 80% of the total dataset, thereby the test set is the 20% remaining.
+
 ```{r}
 set.seed(1996) ## for replication purpose
 #split the data set in training/test set
@@ -56,10 +86,19 @@ final_df.tr <- final_df[index.tr,]
 final_df.te <- final_df[-index.tr,]
 ```
 
+With the aim of avoid overfitting, we will use also a cross validation splitting. To be precise, a 5 fold Cross-validation in order to reduce computational time due to our big dataset.
+
 ```{r}
 trControl <- trainControl(method  = "cv",
                           number  = 5) #5 fold Cross-Validation
 ```
+
+#### K-nearest neighbor (KNN)
+
+The first model that we are going to present is the KNN.
+We predict the categorical variable share_label with all the features in our dataset. It is important to decide which value of the hyperparameter K the model should use in order to optimize our results, to do this we compute a tuning of K taking into account a defined rage of values that K could assume: from 1 to 10. 
+
+From the hyperparameter tuning results, it turns out that the value of K = 9 maximizes Kappa and the accuracy.
 
 ```{r}
 ###KNN 
@@ -71,25 +110,54 @@ fit <- train(share_label ~ .,
              metric     = "Accuracy",
              data       = final_df)
 #k=9 maximizes our Kappa & Accuracy
-
 final_df.knn <- knn3(data = final_df.tr,
                      share_label ~.,
                      k = 9)
-
 final_df.knn.pred <- predict(final_df.knn,
                              newdata = final_df.te,
                              type = "class")
-
 confusionMatrix(data = as.factor(final_df.knn.pred),
                 reference = final_df.te$share_label)
 ```
 
+As we can see from the results, the prediction quality of the KNN model is not satisfying, we achieve an accuracy of 0.558, even the Kappa has a low value.
+Notice that the data seems balanced, indeed sensitivity and specificity take on similar values. by the way, as expected the "lazy learner" provide a really poor prediction.
+
+
+
+#### Naive Bayes
+
+Computation of naive Bayes to predict share_label variable using kernel distribution of data.
+As always, we train the model on the training set and compute the prediction on the test set.
+
+```{r}
+#NAIVE BAYES without hyperparameter tuning
+#since it only achieve a 0.177, we think that other algorithms can do better
+final_df.nb <- naive_bayes(share_label ~ .,
+                           data = final_df.tr,
+                           kernel = TRUE)
+final_df.nb.pred <- predict(final_df.nb,
+                            newdata = final_df.te)
+confusionMatrix(data = as.factor(final_df.nb.pred),
+                reference = final_df.te$share_label)
+```
+
+From the confusion matrix output we notice an accuracy of 0.599; so a slight improvement in the prediction quality compared to KNN.
+
+
+#### Support Vector Machine (SVM)
+
+As our RAM/CPU struggles while hyper-parameter tuning, we've chosen to sample a part of our data in order to have less computational effort. We fit the SVM model in this sampled dataset.
 
 ```{r}
 #as our RAM/CPU struggles while hyper-parameter tuning, we've chosen to sample a part of our data in order to have less computational effort
 sub_hyp <- sample(nrow(final_df), 5000)
 sub_hyp <- final_df[sub_hyp,]
 ```
+
+We do not assume linear relationship between variables so we compute svm with radial kernel.
+
+Thanks to the tuning of hyperparameters, the values of sigma and C that we will use in the model are chosen: sigma = 0.02 and C = 0.75
 
 ```{r}
 #SVM
@@ -102,62 +170,52 @@ svm_hyperpara_train <- train(share_label ~ .,
                          #we assume no linear relationship
                          trControl = trControl,
                          tuneGrid = hyperparameter_svm)
+svm_hyperpara_train
+
 #The final values used for the model were sigma = 0.02 and C = 0.75.
-
-
 final_df.svm_radial <- #train our radial kernel with sigma = 0.02 and C = 0.75
   svm(share_label ~ .,
       data = final_df.tr,
       kernel = "radial",
       tuneGrid = expand.grid(C = 0.75,
                              sigma = 0.02))
-
 final_df.svm.pred_radial <- predict(final_df.svm_radial,
                                     newdata = final_df.te)
-
 confusionMatrix(data = as.factor(final_df.svm.pred_radial),
                 reference = final_df.te$share_label)
 ```
+Svm model with radial Kernel, C = 0.75 and sigma = 0.02 gives us an accuracy of 0.63 and Kappa of 0.26.
+Although the prediction quality is not totally reliable, the outcome has improved compared to KNN.
 
-```{r}
-#NAIVE BAYES without hyperparameter tuning
-#since it only achieve a 0.177, we think that other algo can do better
-final_df.nb <- naive_bayes(share_label ~ .,
-                           data = final_df.tr,
-                           kernel = TRUE)
 
-final_df.nb.pred <- predict(final_df.nb,
-                            newdata = final_df.te)
 
-confusionMatrix(data = as.factor(final_df.nb.pred),
-                reference = final_df.te$share_label)
-```
+#### Classification and regression tree (CART)
+
+Running CART for classification task we find an accuracy of 0.616.
 
 ```{r}
 final_df.tree <- rpart(share_label ~ .,
                        data = final_df.tr)
 rpart.plot(final_df.tree)
-
 final_df.tree.pred <- predict(final_df.tree,
                               newdata = final_df.te,
                               type = "class")
-
 confusionMatrix(data = as.factor(final_df.tree.pred),
                 reference = final_df.te$share_label)
-
 #Trying if pruning is needed
 plotcp(final_df.tree)
 #No need to prune
 ```
+There is no need to prune the tree since we have only 3 nodes and looking at the plot made with plotcp code, we would prune from 3 node to 2; but the model does not improve. So we keep the unpruned tree.
+
+
+#### Random Forest
 
 ```{r}
 # HYPERPARAMETER TUNING FOR RF
-# THIS CODE WORD PERFECTLY BUT TAKES 20 MIN TO RUN
+# THIS CODE WORK PERFECTLY BUT TAKES 20 MIN TO RUN
 # WE GIVE YOU THE OUTPUT OF THIS RUN
 # IN ORDER TO DECREASE KNIT TIME, WE REMOVE THE CODE AND CONSIDER IT AS TEST
-
-
-
 #hyperparameter_rf <-
 #  train(
 #    share_label ~ .,
@@ -167,18 +225,14 @@ plotcp(final_df.tree)
 #    tuneGrid = expand.grid(.mtry = seq(1,5, 0.5)),
 #    trControl = trControl
 #  )
-
 #Random Forest 
-
 #10000 samples
 #   21 predictor
 #    2 classes: 'Unpopular', 'Popular' 
-
 #No pre-processing
 #Resampling: Cross-Validated (5 fold) 
 #Summary of sample sizes: 8000, 7999, 8001, 8000, 8000 
 #Resampling results across tuning parameters:
-
 #  mtry  Accuracy  Kappa
 #  1.0   0.626     0.247
 #  1.5   0.639     0.275
@@ -189,12 +243,12 @@ plotcp(final_df.tree)
 #  4.0   0.633     0.266
 #  4.5   0.634     0.266
 #  5.0   0.634     0.268
-
 #Accuracy was used to select the optimal model using the largest value.
 #The final value used for the model was mtry = 2.5.
 ```
 
-
+The random forest model gives us results really similar to the svm model.
+accuracy = 0.637 and Kappa = 0.672
 ```{r}
 rf <- train(share_label~.,
             data = final_df.tr,
@@ -204,28 +258,33 @@ rf <- train(share_label~.,
             #use the hyperparameter that we've find in
             #the hyperparameter tuning (chunk code line 153-195)
             trControl = trControl)
-
 rf.te.pred <- predict(rf,
                       newdata = final_df.te,
                       type = "raw")
-
 confusionMatrix(data = as.factor(rf.te.pred),
                 reference = final_df.te$share_label)
 # Best Kappa so far: 0.274
 # Best Balanced Accuracy so far : 0.637 
 ```
+#### Bonus part: Variable importance
+
+We compute the variable importance on the random forest model
 
 ```{r}
 # Variable importance random forest
 rf <- randomForest(share_label ~ ., data = final_df.tr)
-
 varImpPlot(rf)
+```
 
-# some minutes to run but it works
+Gini coefficient is an impurity measure. The interpretation of the plot is the following: on the top the most important variables that contribute the most to decrease the node impurity. self_reference.avg_sharess is the most important variable and "day_is_weekend" is the less important.
 
-# Gini coefficient is an impurity measure. The interpretation of the plot is the following: on the top the most important variables that contribute the most to decrease the node impurity. self_reference.avg_sharess is the most important variable and "day_is_weekend" is the less important.
 
+Variable importance on Random forest
+
+
+```{r}
 # variable importance CART
+
 # without shuffle 
 final_df.tree <- rpart(share_label ~ ., data=final_df.tr)
 rpart.plot(final_df.tree)
@@ -233,22 +292,21 @@ final_df.tree.pred <- predict(final_df.tree, newdata = final_df.te, type = "clas
 confusionMatrix(data = as.factor(final_df.tree.pred),
                 reference = final_df.te$share_label)
 
+
 #shuffle on self_reference_avg_sharess
-
 set.seed(143)
-
 final_df.te_shuffle <- final_df.te
 final_df.te_shuffle$self_reference_avg_sharess <- sample(final_df.te_shuffle$self_reference_avg_sharess)
-
 final_df.tree.pre_shuffle <- predict(final_df.tree, newdata = final_df.te_shuffle, type = "class")
-
 confusionMatrix(data = as.factor(final_df.tree.pre_shuffle), reference = final_df.te$share_label)
 
-# Looking at the output we see that the accuracy change from 0.613 to 0.566 ( the latter is in the shuffle procedure)
 ```
+Looking at the output we see that the accuracy changes from 0.613 to 0.566 ( the latter result is in the shuffle procedure).
 
 
 ### Multi-Classes : Searching for outstanding popularity
+
+
 ```{r}
 set.seed(1996) ## for replication purpose
 #split the data set in training/test set
@@ -259,21 +317,22 @@ classes_df.tr <- classes_df[c.index.tr,]
 classes_df.te <- classes_df[-c.index.tr,]
 ```
 
+Sub sampling
 ```{r}
 df.tr.unpop <- filter(classes_df.tr, share_classes == "Unpopular")
 df.tr.pop <- filter(classes_df.tr, share_classes == "Popular")
 df.tr.out <- filter(classes_df.tr, share_classes == "Outstanding")
-
 n.out <- min(table(classes_df.tr$share_classes)) #1582
-
 index.unpop <- sample(size=n.out, x=1:nrow(df.tr.unpop), replace=FALSE) ## sub-sample 840 instances from the "No"
 index.pop <- sample(size=n.out, x=1:nrow(df.tr.pop), replace=FALSE) ## sub-sample 840 instances from the "No"
-
 df.tr.subs <- data.frame(rbind(df.tr.out,
                                df.tr.unpop[index.unpop, ],
                                df.tr.pop[index.pop, ]))
 table(df.tr.subs$share_classes)
 ```
+
+##### Random forest
+In the following part, we computed a random forest on multi-class variable.
 
 ```{r}
 rf_outstanding <- train(share_classes~.,
@@ -291,19 +350,18 @@ rf.te.pred <- predict(rf_outstanding,
 
 confusionMatrix(data = as.factor(rf.te.pred),
                 reference = classes_df.te$share_classes)
-# Poor Kappa: 0.194
+
 ```
+From the confusion matrix we notice that the overall accuracy is really low. ( 0.482) 
+Looking at the results for the different classes: the most predictable papers are the ones with an high level of popularity ( outstanding ). Outstanding class predictions gives us an accuracy of 0.65.
 
-
-
-
-
+prediction using type = "class" in prediction function
 ```{r}
 library(randomForest)
 rf <- randomForest(share_classes ~ ., data = df.tr.subs)
 rf.te.pred <- predict(rf, newdata = classes_df.te, type = "class")
 confusionMatrix(data = as.factor(rf.te.pred),
                 reference = classes_df.te$share_classes)
-
 ```
+results are slightly worse than the case type = raw.
 
