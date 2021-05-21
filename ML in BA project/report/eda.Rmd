@@ -1,13 +1,20 @@
-
+# Section 3 : EDA
 ```{r, echo = FALSE, message = FALSE}
 source(here::here("scripts/setup.R"))
 ```
 
-## Text to be integretad into this rmd
+<br>
 
-Section 2: EDA
+<style>
+div.blue { background-color:#e6f0ff; border-radius: 5px; padding: 20px;}
+</style>
+<div class = "blue">
 
 We first observe dummy variables that we transformed into categorical levels. This allows us to know what's the type of content that appears the most often. We produce a barplot to represent this and we see that the number of articles written about the World and technology is higher than the others. We can also see that articles about social media and lifestyle are not as frequent. 
+
+</div>
+
+<br>
 
 ```{r}
 normal_df %>%
@@ -21,8 +28,16 @@ normal_df %>%
   geom_bar() +
   coord_flip()
 ```
+<br>
+
+<style>
+div.blue { background-color:#e6f0ff; border-radius: 5px; padding: 20px;}
+</style>
+<div class = "blue">
 
 In the first look that we had at the data, we saw that our "shares" variable was right-skewed, so we decided to log transform it, so we can have a more "normalized" variable. Here we can see the distribution under the log transformation:
+
+</div>
 
 ```{r}
 #log_transformation
@@ -35,8 +50,16 @@ hist(
   xlab = "Log_shares"
 ) #histogram
 ```
+<br>
 
-As said in the last section, we transformed our "shares" variable into a categorical one with three levels. Two of the levels we created (unpopular and popular) represent 95% of the shares, and in this graphical representation, we see that we mostly have even numbers for these levels, but with a slight advantage for the unpopular one. It's going to be interesting to see what type of content doesn't get optimal shares and which one does.
+<style>
+div.blue { background-color:#e6f0ff; border-radius: 5px; padding: 20px;}
+</style>
+<div class = "blue">
+
+As said in the last section, we transformed our "shares" variable firstly into a categorical one with two levels. Two of the levels we created unpopular (<quantile 0.5) and popular(>quantile 0.5) represent 100% of the shares, and in this graphical representation, we see that we mostly have even numbers for these levels, but with a slight advantage for the unpopular one. It's going to be interesting to see what type of content doesn't get optimal shares and which one does.
+
+</div>
 
 ```{r}
 #by label
@@ -61,108 +84,108 @@ final_df %>%
   ) +
   xlab("")
 ```
+<br>
+
+<style>
+div.blue { background-color:#e6f0ff; border-radius: 5px; padding: 20px;}
+</style>
+<div class = "blue">
 
 We then take a look at a certain number of variable distributions given the popularity levels. We see that for the variables "n_tokens_title","n_unique_tokens","num_keywords","n_tokens_content" it is almost a 50-50 split between the unpopular and popular articles. It can indicate that the number of words in the content or the title isn't a good indicator to know if an article is going to be share a lot or not. On the other side, the variables "num_hrefs","num_imgs","num_videos","self_reference_avg_sharess" are higher for the popular articles. This can lead us to think that adding links, images, and videos to our article is going to help it to be more shared. 
 
 We also look at the sentiment analysis on these articles, and we see that for the popular articles, there is a higher polarity in the title, which means that there is more positivity in it and that people are going to be keener to share these type of articles. Regarding subjectivity, we see that there isn't much difference between the popular and unpopular articles and that the articles tend to be more objective. 
 
+</div>
+
+
 ```{r}
-final_df %>%
+par(mfrow = c(5, 2))
+
+p1 <- final_df %>%
   group_by(share_label) %>%
   summarise(mean(n_tokens_title)) %>%
   ggplot(aes(x = share_label, y = `mean(n_tokens_title)`)) +
   geom_bar(stat = "identity") +
   ggtitle("") +
   xlab("Popularity Label") +
-  ylab("Mean Number of Token in the title") +
-  theme(plot.title = element_text(hjust = 0.5))#BARPLOT 
-```
+  ylab("num. token title") +
+  theme(plot.title = element_text(hjust = 0.5))
 
-```{r}
-final_df %>%
+
+p2 <- final_df %>%
   group_by(share_label) %>%
   summarise(mean(n_tokens_content)) %>%
   ggplot(aes(x = share_label, y = `mean(n_tokens_content)`)) +
   geom_bar(stat = "identity") +
   ggtitle("") +
   xlab("Popularity Label") +
-  ylab("Mean Number of Token in the article") +
+  ylab("num. token article") +
   theme(plot.title = element_text(hjust = 0.5))#BARPLOT 
-```
 
-```{r}
-final_df %>%
+p3 <- final_df %>%
   group_by(share_label) %>%
   summarise(mean(n_unique_tokens)) %>%
   ggplot(aes(x = share_label, y = `mean(n_unique_tokens)`)) +
   geom_bar(stat = "identity") +
   ggtitle("") +
   xlab("Popularity Label") +
-  ylab("?") +
+  ylab("Token rate") +
   theme(plot.title = element_text(hjust = 0.5))#BARPLOT 
-```
 
-```{r}
-final_df %>%
+p4 <- final_df %>%
   group_by(share_label) %>%
   summarise(mean(num_hrefs)) %>% 
   ggplot(aes(x = share_label, y = `mean(num_hrefs)`)) +
   geom_bar(stat = "identity") +
   ggtitle("") +
-  xlab("Popularity Label") +
-  ylab("Mean Ref") +
+  ylab("Links") +
   theme(plot.title = element_text(hjust = 0.5)) #BARPLOT 
-```
 
-```{r}
-final_df %>%
+
+
+p5 <- final_df %>%
   group_by(share_label) %>%
   summarise(mean(num_imgs)) %>%
   ggplot(aes(x = share_label, y = `mean(num_imgs)`)) +
   geom_bar(stat = "identity") +
   ggtitle("") +
-  xlab("Popularity Label") +
-  ylab("Mean Number of Images") +
+  ylab("Images") +
   theme(plot.title = element_text(hjust = 0.5))#BARPLOT 
-```
 
-```{r}
-final_df %>%
+
+
+p6 <- final_df %>%
   group_by(share_label) %>%
   summarise(mean(num_videos)) %>%
   ggplot(aes(x = share_label, y = `mean(num_videos)`)) +
   geom_bar(stat = "identity") +
   ggtitle("") +
-  xlab("Popularity Label") +
-  ylab("Mean Number of Videos") +
+  ylab("Videos") +
   theme(plot.title = element_text(hjust = 0.5)) #BARPLOT 
-```
 
-```{r}
-final_df %>%
+
+
+p7 <- final_df %>%
   group_by(share_label) %>%
   summarise(mean(num_keywords)) %>%
   ggplot(aes(x = share_label, y = `mean(num_keywords)`)) +
   geom_bar(stat = "identity") +
   ggtitle("") +
-  xlab("Popularity Label") +
-  ylab("Mean Keyword") +
+  ylab("Keyword") +
   theme(plot.title = element_text(hjust = 0.5)) #BARPLOT 
-```
 
-```{r}
-final_df %>%
+
+
+p8 <- final_df %>%
   group_by(share_label) %>%
   summarise(mean(self_reference_avg_sharess)) %>%
   ggplot(aes(x = share_label, y = `mean(self_reference_avg_sharess)`)) +
   geom_bar(stat = "identity") +
   ggtitle("") +
-  xlab("Popularity Label") +
-  ylab("Mean Keyword") +
+  ylab("Reference") +
   theme(plot.title = element_text(hjust = 0.5)) #BARPLOT 
-```
 
-```{r}
+
 #Sentiment analysis is basically the process of determining the attitude or the emotion of the writer, i.e., whether it is positive or negative or neutral.
 #The sentiment function of textblob returns two properties, polarity, and subjectivity.
 #Polarity is float which lies in the range of [-1,1] where 1 means positive statement and -1 means a negative statement.
@@ -171,35 +194,42 @@ final_df %>%
 
 #polarity and subjectivity given shares popularity classes
 
-final_df %>% group_by(share_label) %>% summarise(mean(title_sentiment_polarity)) %>%
+p9 <- final_df %>% group_by(share_label) %>% summarise(mean(title_sentiment_polarity)) %>%
   ggplot(aes(x = share_label, y = `mean(title_sentiment_polarity)`)) +
-  geom_bar(stat = "identity") + ggtitle("Title Sentimental Polarity given Shares Popularity") +
-  xlab("Popularity Label") +
-  ylab("Mean Sentiment Polarity") +
+  geom_bar(stat = "identity") +
+  ylab("Polarity") +
   theme(plot.title = element_text(hjust = 0.5))#BARPLOT 
-```
 
-```{r}
-final_df %>%
+p10 <- final_df %>%
   group_by(share_label) %>%
   summarise(mean(title_subjectivity)) %>%
   ggplot(aes(x = share_label, y = `mean(title_subjectivity)`)) +
   geom_bar(stat = "identity") +
-  ggtitle("Title Sentimental Subjectivity given Shares Popularity") +
-  xlab("Popularity Label") +
-  ylab("Mean Subjectivity") +
+  ylab("Subjectivity") +
   theme(plot.title = element_text(hjust = 0.5))#BARPLOT 
-```
 
-Lastly, we used boxplot to see if there is a difference in certain variable given the number of shares, but as we can see, the number of shares isn't really affected by the type of content,the day the article is published and by the fact that it's published on a weekend or not. 
-```{r}
-ggplot(data = new, aes(data_channel, log(shares))) + geom_boxplot() #Create a boxplot of channels given the shares
+p1 + p2 + p3 + p4 + p5 + p6 + p7 + p8 + p9 + p10
 ```
+<br>
+
+<style>
+div.blue { background-color:#e6f0ff; border-radius: 5px; padding: 20px;}
+</style>
+<div class = "blue">
+
+
+Lastly, we used boxplot to see if there is a difference in certain variable given the number of shares, but as we can see, the number of shares isn't really affected by the type of content,the day the article is published and by the fact that it's published on a weekend or not.
+
+</div>
+
 
 ```{r}
-ggplot(data = new, aes(day, log(shares))) + geom_boxplot() #Create a boxplot of days given the shares 
-```
+par(mfrow = c(3, 1))
+b1 <- ggplot(data = new, aes(data_channel, log(shares))) + geom_boxplot() #Create a boxplot of channels given the shares
 
-```{r}
-ggplot(data = new, aes(day_is_weekend, log(shares))) + geom_boxplot() ##Create a boxplot of weekend given the shares
+b2 <- ggplot(data = new, aes(day, log(shares))) + geom_boxplot() #Create a boxplot of days given the shares 
+
+b3 <- ggplot(data = new, aes(day_is_weekend, log(shares))) + geom_boxplot() ##Create a boxplot of weekend given the shares
+
+b1 + b2 + b3
 ```
