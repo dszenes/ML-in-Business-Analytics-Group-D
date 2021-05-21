@@ -1,0 +1,9 @@
+---
+title: "Predicting the popularity of news articles"
+author: "Abdullahu Nderim, Darino Francesco, del Perugia Louis and Szenes Daniel"
+date: "`r format(Sys.time(), '%d %B, %Y')`"
+output: html_document
+---
+
+```{r child = c('intro.Rmd', 'data.Rmd', 'eda.Rmd', 'analysis.Rmd', 'concl.Rmd')}
+```
