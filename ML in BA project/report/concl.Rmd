@@ -1,0 +1,27 @@
+# Conclusion
+
+```{r, echo = FALSE, message = FALSE}
+source(here::here("scripts/setup.R"))
+```
+
+<br>
+
+<style>
+div.blue { background-color:#e6f0ff; border-radius: 5px; padding: 20px;}
+</style>
+<div class = "blue">
+
+The aim of this project was to study the predictive power of several algorithms on a dataset allows us to explore the possibilities of predicting the popularity of online content based on information about the content itself. The best algorithm with the best predictive power is a random forest with a with mtry = 2.5. The best algorithm with the best predictive power is a random forest and allows us to have a prediction accuracy of about 65%. On the same algorithm, the literature tends to have a slightly higher score, but uses all the features, which makes us think that there is a risk of overfitting. We have chosen the features that can be generalised to other texts, and that seem to be easier to interpret for a generalised implementation. We also wanted to capture the predictive power of articles with impressive popularity. This has never been done before in the literature. The aim was to predict whether a text we were going to write had the potential to be impressively popular (and therefore could reach a very large number of people and could generate high engagement).
+However, we believe that the results we have found and which are also found in the literature are too weak to generalise these algorithms. Or to use them with hindsight.
+These algorithms measure popularity with basic intrasubjective information about a text (its length, when it was published, whether the mood of the text refers to a positive aspect, ...). However, we believe that it is too difficult to accurately predict the popularity of a text with this information alone. There is something else in the popularity that is not yet present.
+To generalise these algorithms, we think it would be important to push/add more complex information to the dataset
+
+
+</div>
+
+
+## References
+
+[1] K. Fernandes, P. Vinagre and P. Cortez. A Proactive Intelligent Decision Support System for Predicting the Popularity of Online News. Proceedings of the 17th EPIA 2015 - Portuguese Conference on Artificial Intelligence, September, Coimbra, Portugal.
+
+[2] H. Ren, Q. Yang. Predicting and Evaluating the Popularity of Online News. Stanford University Press 2015
