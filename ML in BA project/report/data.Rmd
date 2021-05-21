@@ -1,75 +1,15 @@
-# 2 Data
+# Section 2: Data description
 
 ```{r, echo = FALSE, message = FALSE}
 source(here::here("scripts/setup.R"))
 ```
 
-## Text to be integretad into this rmd
-
-Section 2: Data description
-
-In this dataset, each instance is an article on Mashable. The number of shares, our variable of interest, is given to us in the form for of a simple numerical value. We have decided in this case to transform this variable into a categorical variable with three levels: Unpopular, Popular and Outstanding, which are respectively articles with less than 1400 or less, between 1400 and 10600, and more than 10600 shares. These dividing lines were based on the distribution of the number of shares, namely the median point which determines Unpopular articles, while Outstanding articles are in the top 5 %. 
-Compared to previous research on this dataset [1,2], we have decided to limit the number of variables we use to the ones that we think are the most interpretable and thus create a model that is can be more easily generalized and used by other companies that want to promote their online content. We have, for instance, decided not to use the results of a topic modelling analysis called the Latent Dirichlet allocation (LDA), because this is a rather complicated technique which is difficult to interpret to people not familiar with natural language processing. We have also decided to eliminate some highly intercorrelated variables, such as the minimum and maximum of the shares of other Mashable articles referenced in the content of the current instance, keeping only the average value for this variable.
-The predictive variables that we have decided to keep in their original form can be sorted into a few categories:
-
-
-Numeric integer values:
-
-- n_tokens_title: Number of words in the title
-- n_tokens_content: Number of words in the content
-- num_hrefs: Number of links
-- num_imgs: Number of images
-- num_videos: Number of videos
-- num_keywords: Number of keywords (linked subjects that define the article) in the metadata
-- self_reference_avg_sharess: Avg. shares of referenced articles in Mashable (rounded)
-
-Numeric real values:
-
-- average_token_length: Average length of the words in the content
-
-Rates, numerical scores between [0:1] :
-
-- n_unique_tokens: Rate of unique words in the content
-- n_non_stop_unique_tokens: Rate of unique non-stop words in the content
-- global_subjectivity: Text subjectivity
-- rate_positive_words: Rate of positive words among non-neutral tokens
-- rate_negative_words: Rate of negative words among non-neutral tokens
-- title_subjectivity: Title subjectivity
-
-
-Rates, numerical scores between [-1:1] :
-
-- global_sentiment_polarity: Text sentiment polarity
-- title_sentiment_polarity: Title polarity
-
-As their name implies, subjectivity and polarity are NLP techniques that measure levels of subjective opinions and negative/positive emotions expressed respectively, which is why they have different scales. Rates of negative and positive words are measured among the tokens that express emotion (non-neutral), and thus add up to one.
-
-In addition, there are some dummy variables that we have changed into categorical levels of different levels in order to reduce the number of predictors:
-
-- data_channel : 6 levels (Lifestyle, Entertainment, Business, Social Media, Tech, World)
-- day: 7 levels (Monday, Tuesday, Wednesday, Thursday, Friday, Saturday Sunday)
-- day_is_weekend: 2 levels(yes,no)
-
-
 
 ## Raw Data Set
 
-<br>
 
-## 2.1 Mashable Data Set
+## 2.1 Mashable Data Set : Online News Popularity
 
-<style>
-div.blue { background-color:#e6f0ff; border-radius: 5px; padding: 20px;}
-</style>
-<div class = "blue">
-
-First, we will load the data set that record some sets of features about Mashable articles collected in a period of two years.
-
-</div>
-
-<br>
-
-### Online News Populartiy
 ```{r}
 df <- read_csv(file = here::here("data/OnlineNewsPopularity.csv"))
 df <- as_tibble(df)
@@ -79,7 +19,6 @@ df <- as_tibble(df)
 df2 <- read.csv(file = here::here("data/OnlineNewsPopularity.csv"))
 ```
 
-<br>
 
 
 _Source of the data set:_ [https://archive.ics.uci.edu/ml/datasets/Online+News+Popularity]
@@ -89,9 +28,9 @@ div.blue { background-color:#e6f0ff; border-radius: 5px; padding: 20px;}
 </style>
 <div class = "blue">
 
-Data Set Information:
+UCI Data Set Information:
 
-* This dataset is a collection of 39'644 articles published on Mashable, the largest independent news source dedicated to digital culture, social media and technology. A text mining analysis was carried out on each of the articles. Each of the articles obtained various basic statistics from a text mining analysis (the number of words, the general feeling of the article, the theme of the article, ...). The dataset also takes into account the internal details of the document (how many images/videos are in the article, which topic is classified, which day it is classified,...)
+* _This dataset is a collection of 39'644 articles published on Mashable, the largest independent news source dedicated to digital culture, social media and technology. A text mining analysis was carried out on each of the articles. Each of the articles obtained various basic statistics from a text mining analysis (the number of words, the general feeling of the article, the theme of the article, ...). The dataset also takes into account the internal details of the document (how many images/videos are in the article, which topic is classified, which day it is classified,...)_
 
 * Acquisition date: January 8, 2015
 
@@ -108,74 +47,7 @@ datatable(
 
 </div>
 
-<br>
 
-* Find below the variables of the data set
-
-
-  + `url` URL of the article (non-predictive)
-  + `timedelta`  Days between the article publication and the dataset acquisition (non-predictive)
-  + `n_tokens_title` Number of words in the title 
-  + `n_tokens_content` Number of words in the content
-  + `n_unique_tokens` Rate of unique words in the content
-  + `n_non_stop_words` Rate of non-stop words in the content
-  + `n_non_stop_unique_tokens` Rate of unique non-stop words in the content
-  + `num_hrefs` Number of links 
-  + `num_self_hrefs` Number of links to other articles published by Mashable
-  + `num_imgs` Number of images
-  + `num_videos` Number of videos
-  + `average_token_length` Average length of the words in the content
-  + `num_keywords` Number of keywords in the metadata 
-  + `data_channel_is_lifestyle` Is data channel 'Lifestyle'?
-  + `data_channel_is_entertainment` Is data channel 'Entertainment'?
-  + `data_channel_is_bus` Is data channel 'Business'?
-  + `data_channel_is_socmed` Is data channel 'Social Media'?
-  + `data_channel_is_tech` Is data channel 'Tech'?
-  + `data_channel_is_world` Is data channel 'World'?
-  + `kw_min_min` Worst keyword (min. shares)
-  + `kw_max_min` Worst keyword (max. shares)
-  + `kw_avg_min` Worst keyword (avg. shares)
-  + `kw_min_max` Best keyword (min. shares)
-  + `kw_max_max` Best keyword (max. shares)
-  + `kw_avg_max` Best keyword (avg. shares)
-  + `kw_min_avg` Avg. keyword (min. shares)
-  + `kw_max_avg` Avg. keyword (max. shares)
-  + `kw_avg_avg` Avg. keyword (avg. shares)
-  + `self_reference_min_shares` Min. shares of referenced articles in Mashable
-  + `self_reference_max_shares` Max. shares of referenced articles in Mashable
-  + `self_reference_avg_sharess` Avg. shares of referenced articles in Mashable
-  + `weekday_is_monday` Was the article published on a Monday?
-  + `weekday_is_tuesday` Was the article published on a Tuesday?
-  + `weekday_is_wednesday` Was the article published on a Wednesday?
-  + `weekday_is_thursday` Was the article published on a Thursday?
-  + `weekday_is_friday` Was the article published on a Friday?
-  + `weekday_is_saturday` Was the article published on a Saturday?
-  + `weekday_is_sunday` Was the article published on a Sunday?
-  + `is_weekend` Was the article published on the weekend?
-  + `LDA_00` Closeness to LDA topic 0
-  + `LDA_01` Closeness to LDA topic 1
-  + `LDA_02` Closeness to LDA topic 2
-  + `LDA_03` Closeness to LDA topic 3
-  + `LDA_04` Closeness to LDA topic 4
-  + `global_subjectivity` Text subjectivity
-  + `global_sentiment_polarity` Text sentiment polarity
-  + `global_rate_positive_words` Rate of positive words in the content
-  + `global_rate_negative_words` Rate of negative words in the content
-  + `rate_positive_words` Rate of positive words among non-neutral tokens
-  + `rate_negative_words` Rate of negative words among non-neutral tokens
-  + `avg_positive_polarity` Avg. polarity of positive words
-  + `min_positive_polarity` Min. polarity of positive words
-  + `max_positive_polarity` Max. polarity of positive words
-  + `avg_negative_polarity` Avg. polarity of negative words
-  + `min_negative_polarity` Min. polarity of negative words
-  + `max_negative_polarity` Max. polarity of negative words
-  + `title_subjectivity` Title subjectivity
-  + `title_sentiment_polarity` Title polarity
-  + `abs_title_subjectivity` Absolute subjectivity level
-  + `abs_title_sentiment_polarity` Absolute polarity level
-  + `shares` Number of shares (target)
-
-<br>
 
 ```{r}
 summary_df <- summary(df)
@@ -192,11 +64,64 @@ for (i in 2:length(df2)) {
 }
 ```
 
+<style>
+div.blue { background-color:#e6f0ff; border-radius: 5px; padding: 20px;}
+</style>
+<div class = "blue">
+
+In this dataset, each instance is an article on Mashable. The number of shares, our variable of interest, is given to us in the form for of a simple numerical value. As you can see on the last histogram/boxplot, the feature that we want to predict is not normally distributed. To get rid of that, we've to log-transform this feature. We have also decided in this case to transform this variable into a categorical variable with three levels: Unpopular, Popular and Outstanding. These dividing lines were based on the distribution of the number of shares, namely the median point which determines Unpopular articles, while Outstanding articles are in the top 5 %. 
+Compared to previous research on this dataset [1,2], we have decided to limit the number of variables we use to the ones that we think are the most interpretable and thus create a model that is can be more easily generalized and used by other companies that want to promote their online content. We have, for instance, decided not to use the results of a topic modelling analysis called the Latent Dirichlet allocation (LDA), because this is a rather complicated technique which is difficult to interpret to people not familiar with natural language processing. We have also decided to eliminate some highly intercorrelated variables, such as the minimum and maximum of the shares of other Mashable articles referenced in the content of the current instance, keeping only the average value for this variable.
+
+</div>
 
 <br>
 
+<style>
+div.blue { background-color:#e6f0ff; border-radius: 5px; padding: 20px;}
+</style>
+<div class = "blue">
 
-### Filtering the raw data set
+* The predictive variables that we have decided to keep in their original form can be sorted into a few categories :
+
+Numeric integer values:
+
+  + `n_tokens_title` Number of words in the title
+  + `n_tokens_content` Number of words in the content
+  + `num_hrefs` Number of links
+  + `num_imgs` Number of images
+  + `num_videos` Number of videos
+  + `num_keywords` Number of keywords (linked subjects that define the article) in the metadata
+  + `self_reference_avg_sharess` Avg. shares of referenced articles in Mashable (rounded)
+
+Numeric real values:
+
+  + `average_token_length` Average length of the words in the content
+
+Rates, numerical scores between [0:1] :
+
+  + `n_unique_tokens` Rate of unique words in the content
+  + `n_non_stop_unique_tokens` Rate of unique non-stop words in the content
+  + `global_subjectivity` Text subjectivity
+  + `rate_positive_words` Rate of positive words among non-neutral tokens
+  + `rate_negative_words` Rate of negative words among non-neutral tokens
+  + `title_subjectivity` Title subjectivity
+
+Rates, numerical scores between [-1:1] :
+
+  + `global_sentiment_polarity` Text sentiment polarity
+  + `title_sentiment_polarity` Title polarity
+
+As their name implies, subjectivity and polarity are NLP techniques that measure levels of subjective opinions and negative/positive emotions expressed respectively, which is why they have different scales. Rates of negative and positive words are measured among the tokens that express emotion (non-neutral), and thus add up to one.
+
+In addition, there are some dummy variables that we have changed into categorical levels of different levels in order to reduce the number of predictors:
+
+  + `data_channel`  6 levels (Lifestyle, Entertainment, Business, Social Media, Tech, World)
+  + `day`  7 levels (Monday, Tuesday, Wednesday, Thursday, Friday, Saturday Sunday)
+  + `day_is_weekend ` 2 levels(yes,no)
+
+</div>
+
+<br>
 
 ```{r}
 zero_df <- df %>%
@@ -216,17 +141,15 @@ long_df <- df %>%
 ```{r}
 normal_df <- df %>%
   filter(n_tokens_content < 1500 & n_tokens_content > 0)
+normal_df <- normal_df %>% mutate(shares = log(shares))
 ```
 
 ```{r}
 #creating shares popularity classes based on quantiles
-
-quantile(normal_df$shares, probs = c(seq(0,1, length.out = 5)))
-quantile(normal_df$shares, probs = c(seq(0,1, length.out = 50)))
-
-share_label <- cut(normal_df$shares, breaks = c(0, 1400, 843300))
+#quantile(normal_df$shares, probs = c(seq(0,1, length.out = 5)))
+#quantile(normal_df$shares, probs = c(seq(0,1, length.out = 50)))
+share_label <- cut(normal_df$shares, breaks = c(0.00, 7.24, 13.65))
 levels(share_label) <- c("Unpopular", "Popular")
-
 new <- tibble(normal_df, share_label)
 ```
 
@@ -258,11 +181,6 @@ new$day <- as.factor(new$day)
 new <- new %>%
   mutate(weekend=as.factor(is_weekend)) %>%
   mutate(day_is_weekend=fct_collapse(weekend,"yes"= "1","no"= "0"))
-```
-
-```{r}
-library(ggcorrplot)
-ggcorrplot(cor(normal_df[2:ncol(normal_df)]))
 ```
 
 ```{r}
@@ -314,18 +232,18 @@ final_df <-
     -global_rate_positive_words,
     -weekend,
     -shares
-  )
+  ) %>% filter(!is.na(share_label))
 ```
 
 ```{r}
 #we want create an extra category for an exceptionally high number of shares, we chose a number that will define the 5 % most popular articles
-quantile(normal_df$shares, probs = 0.95)
-quantile(normal_df$shares, probs = 0.5)
+#quantile(normal_df$shares, probs = 0.95)
+#quantile(normal_df$shares, probs = 0.5)
 ```
 
 ```{r}
 #creating shares popularity classes based on quantiles
-share_classes <- cut(normal_df$shares, breaks = c(0, 1400, 10600, 843300))
+share_classes <- cut(normal_df$shares, breaks = c(0.00, 7.24, 9.27, 13.65))
 levels(share_classes) <- c("Unpopular", "Popular", "Outstanding")
 new2 <- tibble(normal_df, share_classes)
 ```
@@ -409,11 +327,5 @@ classes_df <-
     -global_rate_positive_words,
     -weekend,
     -shares
-  )
+  ) %>% filter(!is.na(share_classes))
 ```
-
-
-
-
-
-
