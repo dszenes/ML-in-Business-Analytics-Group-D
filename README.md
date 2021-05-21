@@ -13,16 +13,3 @@
 
 ** Extra **
 - Implementing variable importance
-
-
-
-*Need to be done:*
-
-- Introduction (why is it useful to analyse this data, already research on?, ...), detailed description of the data
-- explanation of the EDA + comment the code ("well explained, enough details, logical, appropriately used, codes are explained")
-- Same for models
-- try to CV with few models
-- Hyperparameters tuning
-- Outstanding popularity analysis (DONE)
-- HTML presentation
-- Conclusion : Interpretation and results exploitation
