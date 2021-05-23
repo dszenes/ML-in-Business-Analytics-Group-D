@@ -10,7 +10,7 @@ div.blue { background-color:#e6f0ff; border-radius: 5px; padding: 20px;}
 </style>
 <div class = "blue">
 
-We first observe dummy variables that we transformed into categorical levels. This allows us to know what's the type of content that appears the most often. We produce a barplot to represent this and we see that the number of articles written about the World and technology is higher than the others. We can also see that articles about social media and lifestyle are not as frequent. 
+We first observe dummy variables that we transformed into categorical levels. This allows us to know what type of content appears the most often. We produce a barplot to represent this and we see that the number of articles written about world affairs and technology is higher than the others. We can also see that social media and lifestyle articles are not as frequent. 
 
 </div>
 
@@ -57,7 +57,7 @@ div.blue { background-color:#e6f0ff; border-radius: 5px; padding: 20px;}
 </style>
 <div class = "blue">
 
-As said in the last section, we transformed our "shares" variable firstly into a categorical one with two levels. Two of the levels we created unpopular (<quantile 0.5) and popular(>quantile 0.5) represent 100% of the shares, and in this graphical representation, we see that we mostly have even numbers for these levels, but with a slight advantage for the unpopular one. It's going to be interesting to see what type of content doesn't get optimal shares and which one does.
+As said in the last section, we transformed our "shares" variable firstly into a categorical one with two levels. The two levels we created, unpopular (<quantile 0.5) and popular(>quantile 0.5) represent 100% of the shares, and in this graphical representation, we see that we mostly have even numbers for these levels, but with a slight advantage for the popular one. It's going to be interesting to see what type of content gets optimal shares and which one doesn't.
 
 </div>
 
@@ -91,9 +91,9 @@ div.blue { background-color:#e6f0ff; border-radius: 5px; padding: 20px;}
 </style>
 <div class = "blue">
 
-We then take a look at a certain number of variable distributions given the popularity levels. We see that for the variables "n_tokens_title","n_unique_tokens","num_keywords","n_tokens_content" it is almost a 50-50 split between the unpopular and popular articles. It can indicate that the number of words in the content or the title isn't a good indicator to know if an article is going to be share a lot or not. On the other side, the variables "num_hrefs","num_imgs","num_videos","self_reference_avg_sharess" are higher for the popular articles. This can lead us to think that adding links, images, and videos to our article is going to help it to be more shared. 
+We then take a look at a certain number of variable distributions given the popularity levels. We see that for the variables "n_tokens_title","n_unique_tokens","num_keywords","n_tokens_content" it is almost a 50-50 split between the unpopular and popular articles. This can indicate that the number of words in the content or the title isn't a good indicator to know if an article is going to be share a lot or not. On the other side, the variables "num_hrefs","num_imgs","num_videos","self_reference_avg_sharess" are higher for the popular articles. This can lead us to think that adding links, images, and videos to our article is going to help increase shares. 
 
-We also look at the sentiment analysis on these articles, and we see that for the popular articles, there is a higher polarity in the title, which means that there is more positivity in it and that people are going to be keener to share these type of articles. Regarding subjectivity, we see that there isn't much difference between the popular and unpopular articles and that the articles tend to be more objective. 
+We also look at the sentiment analysis on these articles, and we see that for the popular articles, there is a higher polarity in the title, which means that there is more positivity in it and that people are going to be keener to share these types of articles. Regarding subjectivity, we see that there isn't much difference between the popular and unpopular articles and that the articles tend to be more objective. 
 
 </div>
 
@@ -218,7 +218,7 @@ div.blue { background-color:#e6f0ff; border-radius: 5px; padding: 20px;}
 <div class = "blue">
 
 
-Lastly, we used boxplot to see if there is a difference in certain variable given the number of shares, but as we can see, the number of shares isn't really affected by the type of content,the day the article is published and by the fact that it's published on a weekend or not.
+Lastly, we used boxplots to see if there is a difference among the categorical variables given the number of shares, but as we can see, the number of shares isn't really affected by the type of content,the day the article is published or by the fact that it's published on a weekend or not.
 
 </div>
 

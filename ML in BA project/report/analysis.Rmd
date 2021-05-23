@@ -27,7 +27,7 @@ RQ
 
 ## Unsupervised Learning
 
-Start the unsupervised learning by giving an overlook to the correlation between variables. it is important to look at the correlation structure in order to take decisions about dimension reductions.
+First, we do some unsupervised learning by giving an overlook to the correlation between variables. it is important to look at the correlation structure in order to make decisions about dimension reductions.
 
 ```{r}
 library(ggcorrplot)
@@ -36,13 +36,13 @@ ggcorrplot(cor(final_df[1:16]))
 
 
 ```
-We can notice that there are some variable highly negative correlated between them, such as rate_negative_words and rate_positive_words and n_unique_token together with n_token_content. Rather positively correlated are rate_positive_words and global_sentiment polarity. Color gradation gives us the information about the positive/negative correlation intensity.
+We can notice that there are some variables that are highly negative correlated, such as rate_negative_words and rate_positive_words and n_unique_token together with n_token_content. Examples of positively correlated variables are rate_positive_words and global_sentiment polarity. The color gradation gives us the information about the positive/negative correlation intensity.
 
 
 ### Principal Component Analysis (PCA)
 
 After inspecting the correlation structure, we compute the Principal component analysis.
-in order to give the same importance to each variable we scale the data first, and then compute the PCA.
+In order to give the same importance to each variable we scale the data first, and then compute the PCA.
 
 ```{r}
 
@@ -55,7 +55,7 @@ for (i in 1:6) {
   print(fviz_contrib(pop.pca, choice = "var", axes = i))
 }
 ```
-Notice that the first dimention account for 18.8% of the total variance, and the second dimention for 17.6%. Since the third component the explained variance is halved with respect to the second component.
+Notice that the first dimention accounts for 18.8% of the total variance, and the second dimention for 17.6%. For the third component, the explained variance is halved compared to the second component.
 
 * first component:
 Mainly positively correlated with n_non_stop_unique_token and n_unique_token and slightly positively correlated with rate_positive_words; negatively correlated with n_token_content, slightly negatively correlated with rate_negative_words.
@@ -68,12 +68,12 @@ Mainly positively correlated with rate_positive_words and global_sentiment_polar
 
 In this section, we fit different models in order to predict the categorical variable: share_label.
 
-We conducted two supervised learnings: one for binary class and one for multi class. In the binary class analysis we predict the level of popularity ( given by the variable share_label) that can be: Popular or unpopular.
-Whereas, in the multi-classes we predict the share_class variable that can assume one more labels of popularity which is: Outstanding. So in total: Unpopular, popular and outstanding.
+We conducted two supervised learning tasks: one for binary class and one for multi class. In the binary class analysis we predict the level of popularity ( given by the variable share_label) that can be: Popular or unpopular.
+In the multi-class task we predict the share_class variable that can assume one more label of popularity which is: Outstanding. So in total: Unpopular, Popular and Outstanding.
 
 ### Binary Classes
 
-As always, we split the dataset in 2 subgroups: the training set and the test set. We decided to made a training set that accounts for the 80% of the total dataset, thereby the test set is the 20% remaining.
+As always, we split the dataset in 2 subgroups: the training set and the test set. We decided to make a training set that accounts for 80% of the total dataset, thus the test set the remaining 20%.
 
 ```{r}
 set.seed(1996) ## for replication purpose
@@ -86,7 +86,7 @@ final_df.tr <- final_df[index.tr,]
 final_df.te <- final_df[-index.tr,]
 ```
 
-With the aim of avoid overfitting, we will use also a cross validation splitting. To be precise, a 5 fold Cross-validation in order to reduce computational time due to our big dataset.
+With the aim of avoid overfitting, we will also perform a cross validation split. To be precise, we will do an only 5 fold cross-validation in order to reduce computational time due to our big dataset.
 
 ```{r}
 trControl <- trainControl(method  = "cv",
@@ -96,9 +96,9 @@ trControl <- trainControl(method  = "cv",
 #### K-nearest neighbor (KNN)
 
 The first model that we are going to present is the KNN.
-We predict the categorical variable share_label with all the features in our dataset. It is important to decide which value of the hyperparameter K the model should use in order to optimize our results, to do this we compute a tuning of K taking into account a defined rage of values that K could assume: from 1 to 10. 
+We predict the categorical variable share_label with all the features in our dataset. It is important to decide which value of the hyperparameter K the model should use in order to optimize our results, to do this we perform a tuning of K, taking into account a defined range of values that K could assume: from 1 to 10. 
 
-From the hyperparameter tuning results, it turns out that the value of K = 9 maximizes Kappa and the accuracy.
+From the hyperparameter tuning results, it turns out that the value of K = 9 maximizes the Kappa and the accuracy.
 
 ```{r}
 ###KNN 
@@ -120,8 +120,8 @@ confusionMatrix(data = as.factor(final_df.knn.pred),
                 reference = final_df.te$share_label)
 ```
 
-As we can see from the results, the prediction quality of the KNN model is not satisfying, we achieve an accuracy of 0.558, even the Kappa has a low value.
-Notice that the data seems balanced, indeed sensitivity and specificity take on similar values. by the way, as expected the "lazy learner" provide a really poor prediction.
+As we can see from the results, the prediction quality of the KNN model is not satisfying, we achieve an accuracy of 0.558, and the Kappa has a verylow value.
+Notice that the data seems balanced, indeed sensitivity and specificity take on similar values. As expected the "lazy learner" provide a really poor prediction.
 
 
 
