@@ -1,81 +1,147 @@
-# 4 Analysis
+# Section 4 : Analysis
 
 
 ```{r, echo = FALSE, message = FALSE}
 source(here::here("scripts/setup.R"))
 ```
 
-## 4.1 Research question 1
 
-- Let's put ourselves in context. Our first research question is as follows:
+## 4.1 : Unsupervised Learning
+
+<br>
 
 <style>
 div.blue { background-color:#e6f0ff; border-radius: 5px; padding: 20px;}
 </style>
 <div class = "blue">
 
-RQ
+Start the unsupervised learning by giving an overlook to the correlation between variables. It is important to look at the correlation structure in order to get a primary view of what probably going to happen for dimension reduction.
 
 </div>
 
-<br><br><br>
+<br>
 
-...
+```{r}
+ggcorrplot(cor(final_df[1:16]))
+```
+
+<style>
+div.blue { background-color:#e6f0ff; border-radius: 5px; padding: 20px;}
+</style>
+<div class = "blue">
+
+Color gradation gives us the information about the positive/negative correlation intensity.
+We can notice that there are some variable highly negative correlated between them, such as rate_negative_words and rate_positive_words and n_unique_token together with n_token_content.
+We conclude those variables to be the same, we could remove one of them or let the dimension reduction act for those variable. Rather positively correlated are rate_positive_words and global_sentiment polarity. For the rest of the variables, we see that it is difficult to see any correlation: they are very small. We are wondering what the result will be with the dimension reduction.
+
+</div>
+
+<br>
+
+### 4.1.1 : Principal Component Analysis (PCA)
+
+<br>
+
+<style>
+div.blue { background-color:#e6f0ff; border-radius: 5px; padding: 20px;}
+</style>
+<div class = "blue">
+
+After inspecting the correlation structure, we compute the Principal Component Analysis.
+in order to give the same importance to each variable we scale the data first, and then compute the PCA.
+
+</div>
+
+<br>
+
+```{r}
+summary(prcomp(final_df[1:16], scale = TRUE))
+pop.pca <- PCA(final_df[1:16], ncp = 21, graph = FALSE)
+```
+
+<br>
+
+<style>
+div.blue { background-color:#e6f0ff; border-radius: 5px; padding: 20px;}
+</style>
+<div class = "blue">
+
+* First component:
+Mainly positively correlated with n_non_stop_unique_token and n_unique_token and slightly positively correlated with rate_positive_words; negatively correlated with n_token_content, slightly negatively correlated with rate_negative_words.
+
+* Second component:
+Mainly positively correlated with rate_positive_words and global_sentiment_polarity; negatively correlated with rate_negative_words. Slightly negatively correlated also with n_non_stop_unique_token and n_unique_token.
+
+What we conclude from this graph is that there are variables that are the same. We are not going to remove them and let dimension reduction do its job.
+
+</div>
+
+<br>
+
+```{r}
+fviz_pca_var(pop.pca)
+```
+
+<br>
+
+<style>
+div.blue { background-color:#e6f0ff; border-radius: 5px; padding: 20px;}
+</style>
+<div class = "blue">
+
+Notice that the first dimension account for 18.8% of the total variance, and the second dimension for 17.6%. Since the third component the explained variance is halved with respect to the second component. To have 60% of the total variance explained, we would need to reduce the dimensions with 5 components. We think that 5 components is a lot. But if they make sense (that the components include distinct features), this number of dimensions is justified. Let us proceed to the analysis of the inside of these components
+
+</div>
+
+<br>
+
+```{r}
+fviz_eig(pop.pca, addlabels = TRUE, ncp = 21)
+```
 
 <br>
 
 
-## Unsupervised Learning
-
-First, we do some unsupervised learning by giving an overlook to the correlation between variables. it is important to look at the correlation structure in order to make decisions about dimension reductions.
-
 ```{r}
-library(ggcorrplot)
-
-ggcorrplot(cor(final_df[1:16]))
-
-
-```
-We can notice that there are some variables that are highly negative correlated, such as rate_negative_words and rate_positive_words and n_unique_token together with n_token_content. Examples of positively correlated variables are rate_positive_words and global_sentiment polarity. The color gradation gives us the information about the positive/negative correlation intensity.
-
-
-### Principal Component Analysis (PCA)
-
-After inspecting the correlation structure, we compute the Principal component analysis.
-In order to give the same importance to each variable we scale the data first, and then compute the PCA.
-
-```{r}
-
-?PCA
-summary(prcomp(final_df[1:16], scale = TRUE))
-pop.pca <- PCA(final_df[1:16], ncp = 21, graph = FALSE)
-fviz_pca_var(pop.pca)
-fviz_eig(pop.pca, addlabels = TRUE, ncp=21)
-for (i in 1:6) {
+for (i in 1:4) {
   print(fviz_contrib(pop.pca, choice = "var", axes = i))
 }
 ```
-Notice that the first dimention accounts for 18.8% of the total variance, and the second dimention for 17.6%. For the third component, the explained variance is halved compared to the second component.
 
-* first component:
-Mainly positively correlated with n_non_stop_unique_token and n_unique_token and slightly positively correlated with rate_positive_words; negatively correlated with n_token_content, slightly negatively correlated with rate_negative_words.
+<br>
 
-* second component:
-Mainly positively correlated with rate_positive_words and global_sentiment_polarity; negatively correlated with rate_negative_words. Slightly negatively correlated also with n_non_stop_unique_token and n_unique_token.
+## 4.2 : Supervised Learning
 
+<style>
+div.blue { background-color:#e6f0ff; border-radius: 5px; padding: 20px;}
+</style>
+<div class = "blue">
 
-## Supervised Learning
+In this section, we fit different models in order to best predict the share popularity of a news article.
+We conducted two supervised learnings: one for binary class and one for multi class.
+As mentioned earlier, we have chosen to transform the first 50 quantiles of the share variable. These low-share items will be put in the binary class: Unpopular. The last 50 quantiles will have the most shared items and will be considered popular. Our goal, with binary classification tools, is to predict whether an article will be popular or not.
+Whereas, in the multi-classes we predict the share_class variable that can assume one more labels of popularity which is: Outstanding. The aim with this classification is to analyse whether our best models are able to predict articles with impressive popularity according to specific features.
 
-In this section, we fit different models in order to predict the categorical variable: share_label.
+</div>
 
-We conducted two supervised learning tasks: one for binary class and one for multi class. In the binary class analysis we predict the level of popularity ( given by the variable share_label) that can be: Popular or unpopular.
-In the multi-class task we predict the share_class variable that can assume one more label of popularity which is: Outstanding. So in total: Unpopular, Popular and Outstanding.
+<br>
 
-### Binary Classes
+### 4.2.1 : Binary Classes
 
-As always, we split the dataset in 2 subgroups: the training set and the test set. We decided to make a training set that accounts for 80% of the total dataset, thus the test set the remaining 20%.
+<br>
 
-```{r}
+<style>
+div.blue { background-color:#e6f0ff; border-radius: 5px; padding: 20px;}
+</style>
+<div class = "blue">
+
+As always, we split the dataset in 2 subgroups: the training set and the test set. We decided to made a training set that accounts for the 80% of the total dataset, thereby the test set is the 20% remaining.
+
+</div>
+
+<br>
+
+```{r warning=FALSE}
 set.seed(1996) ## for replication purpose
 #split the data set in training/test set
 index.tr <-
@@ -84,35 +150,61 @@ index.tr <-
                       list = FALSE)
 final_df.tr <- final_df[index.tr,]
 final_df.te <- final_df[-index.tr,]
+print(head(final_df.tr))
+print(head(final_df.te))
 ```
 
-With the aim of avoid overfitting, we will also perform a cross validation split. To be precise, we will do an only 5 fold cross-validation in order to reduce computational time due to our big dataset.
+<br>
+
+<style>
+div.blue { background-color:#e6f0ff; border-radius: 5px; padding: 20px;}
+</style>
+<div class = "blue">
+
+With the aim of avoid overfitting and some selection bias, we will use also a cross validation splitting. To be precise, a 5 fold Cross-validation in order to reduce computational time due to our big dataset. We also believe that going beyond 5 folds is not very useful because, according to the literature, this data-set have poor prediction abilities
+
+</div>
+
+<br>
 
 ```{r}
 trControl <- trainControl(method  = "cv",
                           number  = 5) #5 fold Cross-Validation
 ```
 
-#### K-nearest neighbor (KNN)
+#### 4.2.1.1 : K-nearest neighbor (KNN)
 
-The first model that we are going to present is the KNN.
-We predict the categorical variable share_label with all the features in our dataset. It is important to decide which value of the hyperparameter K the model should use in order to optimize our results, to do this we perform a tuning of K, taking into account a defined range of values that K could assume: from 1 to 10. 
+<br>
 
-From the hyperparameter tuning results, it turns out that the value of K = 9 maximizes the Kappa and the accuracy.
+<style>
+div.blue { background-color:#e6f0ff; border-radius: 5px; padding: 20px;}
+</style>
+<div class = "blue">
 
-```{r}
+The first algorithm that we are going to test on our dataset is the KNN.
+We're going to use all the features selected in order to check the prediction abilities of KNN on this dataset.
+It is important to decide which value of the hyperparameter K the model should use in order to optimize the prediction power of the algorithm and our results, to do this we tuned the hyperparameter K. We defined range of values that K could assume: from 1 to 10. 
+
+From the hyperparameter tuning results, it turns out that the value of K = 9 maximizes Kappa and the accuracy. We'll fit our training with this hyperparameter setting.
+
+</div>
+
+
+```{r warning=FALSE}
 ###KNN 
-fit <- train(share_label ~ .,
-             #trying to predict share_label with all other features
-             method     = "knn",
-             tuneGrid   = expand.grid(k = 1:10), #tuning K hyperparameters
-             trControl  = trControl,
-             metric     = "Accuracy",
-             data       = final_df)
+#trying to predict share_label with all other features
+#fit <- train(share_label ~ .,
+#             method     = "knn",
+#             tuneGrid   = expand.grid(k = 8:20), #tuning K hyperparameters
+#             trControl  = trControl,
+#             metric     = "Accuracy", 
+#             data       = final_df)
+#we put it as text in order to decrease knit time: you can remove the # 
+
 #k=9 maximizes our Kappa & Accuracy
 final_df.knn <- knn3(data = final_df.tr,
                      share_label ~.,
-                     k = 9)
+                     k = 19)
 final_df.knn.pred <- predict(final_df.knn,
                              newdata = final_df.te,
                              type = "class")
@@ -120,15 +212,31 @@ confusionMatrix(data = as.factor(final_df.knn.pred),
                 reference = final_df.te$share_label)
 ```
 
-As we can see from the results, the prediction quality of the KNN model is not satisfying, we achieve an accuracy of 0.558, and the Kappa has a verylow value.
-Notice that the data seems balanced, indeed sensitivity and specificity take on similar values. As expected the "lazy learner" provide a really poor prediction.
+<style>
+div.blue { background-color:#e6f0ff; border-radius: 5px; padding: 20px;}
+</style>
+<div class = "blue">
+
+As we can see from the results, the prediction quality of the KNN algorithm is not satisfying, we achieve a Balanced Accuracy of 0.558. This algorithm also has more difficulty in predicting popular articles: Specificity < Sensitivity. Let us remind ourselves what a Cohen's Kappa means. This score compares the accuracy that we found with the algorithm with the accuracy that would have happened through some random predictions. If it is close to 1, it means that our algorithm is performing well. We see that here, the Kappa is close to 0.116, this algorithm is almost indistinguishable from an algorithm that would predict random classifications.
+As expected the "lazy learner" provide a really poor prediction. Now let's see if other algorithms perform better.
+
+</div>
 
 
+<br>
 
-#### Naive Bayes
+#### 4.2.1.2 : Naive Bayes
 
-Computation of naive Bayes to predict share_label variable using kernel distribution of data.
-As always, we train the model on the training set and compute the prediction on the test set.
+<style>
+div.blue { background-color:#e6f0ff; border-radius: 5px; padding: 20px;}
+</style>
+<div class = "blue">
+
+The next prediction algorithm we will train on our dataset is the Naive Bayes classifier.
+As always, we train the model on the training set and compute the prediction on the test set. If you go back to the section where we show visualisations of each of our features, you can see that few of them have a normal distribution. So we chose to train a model with another distribution with a more flexible density: we will use a kernel density estimator.
+
+</div>
+
 
 ```{r}
 #NAIVE BAYES without hyperparameter tuning
@@ -142,24 +250,70 @@ confusionMatrix(data = as.factor(final_df.nb.pred),
                 reference = final_df.te$share_label)
 ```
 
-From the confusion matrix output we notice an accuracy of 0.599; so a slight improvement in the prediction quality compared to KNN.
+<br>
+
+<style>
+div.blue { background-color:#e6f0ff; border-radius: 5px; padding: 20px;}
+</style>
+<div class = "blue">
+
+We notice that this algorithm works better than the previous one. It predicts 0.761 of unpopular articles when they were actually classified as unpopular. Unfortunately, it has a very poor ability to predict popular articles (Specificity : 0.438). Thus, the prediction quality of the  algorithm is still not satisfying, we achieve a Balanced Accuracy of 0.600. With this method, we achieved a Kappa of .195, which is very low. 
+
+</div>
+
+<br>
 
 
-#### Support Vector Machine (SVM)
 
-As our RAM/CPU struggles while hyper-parameter tuning, we've chosen to sample a part of our data in order to have less computational effort. We fit the SVM model in this sampled dataset.
+##### Sub-sampling : hyper-parameter tuning issue
+
+<style>
+div.blue { background-color:#e6f0ff; border-radius: 5px; padding: 20px;}
+</style>
+<div class = "blue">
+
+As our RAM/CPU struggles while hyper-parameter tuning, we've chosen to sample a part of our data in order to have less computational effort. 
 
 ```{r}
 #as our RAM/CPU struggles while hyper-parameter tuning, we've chosen to sample a part of our data in order to have less computational effort
 sub_hyp <- sample(nrow(final_df), 5000)
 sub_hyp <- final_df[sub_hyp,]
+
+print("sub-sample")
+datatable(
+  sub_hyp,
+  rownames = FALSE,
+  filter = "top",
+  options = list(pageLength = 5, scrollX = T)
+)
+
 ```
 
-We do not assume linear relationship between variables so we compute svm with radial kernel.
+</div>
 
-Thanks to the tuning of hyperparameters, the values of sigma and C that we will use in the model are chosen: sigma = 0.02 and C = 0.75
+#### 4.2.1.3 : Support Vector Machine (SVM)
 
-```{r}
+<style>
+div.blue { background-color:#e6f0ff; border-radius: 5px; padding: 20px;}
+</style>
+<div class = "blue">
+
+The next algorithm for which we wanted to check the prediction accuracy for our dataset is SVM.
+As we have a lot of variable,  features correlation, and non-normal distribution, we assume non-linear relationship between variables so we precise our analysis on SVM with radial kernel.
+
+To do this, we chose to set our hyperparameters by performing a grid-search based on 8 values.
+
+| Sigma | Cost | 
+|------------------|------------------|
+| 0.01, 0.02, 0.05, 0.1 | 0.00, 0.25, 0.50, 0.75, 1.00 |
+
+
+Thanks to the tuning of hyperparameters, the values of sigma and C that maximizes our scores and that we're going to use for the model training are: sigma = 0.01 and C = 0.25
+
+</div>
+
+
+```{r warning=FALSE}
 #SVM
 hyperparameter_svm <- expand.grid(sigma = c(0.01, 0.02, 0.05, 0.1),
                            C = seq(0,1,0.25))
@@ -172,26 +326,36 @@ svm_hyperpara_train <- train(share_label ~ .,
                          tuneGrid = hyperparameter_svm)
 svm_hyperpara_train
 
-#The final values used for the model were sigma = 0.02 and C = 0.75.
-final_df.svm_radial <- #train our radial kernel with sigma = 0.02 and C = 0.75
-  svm(share_label ~ .,
-      data = final_df.tr,
-      kernel = "radial",
-      tuneGrid = expand.grid(C = 0.75,
-                             sigma = 0.02))
-final_df.svm.pred_radial <- predict(final_df.svm_radial,
+#The final values used for the model were sigma = 0.01 and C = 0.25.
+
+final_df.svm.pred_radial <- predict(svm_hyperpara_train,
                                     newdata = final_df.te)
 confusionMatrix(data = as.factor(final_df.svm.pred_radial),
                 reference = final_df.te$share_label)
 ```
-Svm model with radial Kernel, C = 0.75 and sigma = 0.02 gives us an accuracy of 0.63 and Kappa of 0.26.
-Although the prediction quality is not totally reliable, the outcome has improved compared to KNN.
 
+<style>
+div.blue { background-color:#e6f0ff; border-radius: 5px; padding: 20px;}
+</style>
+<div class = "blue">
 
+This algorithm is giving the best results so far. The Kappa is equal to 0.264 and the Balanced Accuracy  is equal to 0.631. But let's be reasonable, these are not good measures of accuracy. The Kappa is not big enough... Even with this algorithm, our black box has trouble classifying. If we look at the Sensitivity score (=0.558), we can thus conclude that it struggles predicting unpopular articles. On the other hand, if we look at the  Specificity score (=0.705), we're reaching a good level of prediction for popular articles.
 
-#### Classification and regression tree (CART)
+</div>
 
-Running CART for classification task we find an accuracy of 0.616.
+<br>
+
+#### 4.2.1.4 :Classification and regression tree (CART)
+
+<style>
+div.blue { background-color:#e6f0ff; border-radius: 5px; padding: 20px;}
+</style>
+<div class = "blue">
+
+The second last algorithm for which we wanted to check the prediction accuracy is the CART algorithm.
+This algorithm can also be very interesting not for predictive purposes but to see which features most influences the classification to a popular article.
+
+</div>
 
 ```{r}
 final_df.tree <- rpart(share_label ~ .,
@@ -202,20 +366,47 @@ final_df.tree.pred <- predict(final_df.tree,
                               type = "class")
 confusionMatrix(data = as.factor(final_df.tree.pred),
                 reference = final_df.te$share_label)
+```
+<style>
+div.blue { background-color:#e6f0ff; border-radius: 5px; padding: 20px;}
+</style>
+<div class = "blue">
+
+The scores of this model are worse than those of the SVM model, we do not think to keep this model to predict our new instances.
+
+But it is very interesting to note which features influence the classification as popular, not popular. As we already seen in the EDA part, we can see that most of the choices are made on the theme of the article, the day and the number of referrals. If the topic of the article is not Business/Entertainment/World (Lifestyle or Social Media) or if it is published on the weekend, it is more likely to be popular. It is worth noting that no NLP values are important in the choice for classification.
+
+To see if this algorithm has a risk of overfitting, we will check if the tree does need to be reduce : 
+
+</div>
+
+```{r}
 #Trying if pruning is needed
 plotcp(final_df.tree)
 #No need to prune
 ```
-There is no need to prune the tree since we have only 3 nodes and looking at the plot made with plotcp code, we would prune from 3 node to 2; but the model does not improve. So we keep the unpruned tree.
 
+<style>
+div.blue { background-color:#e6f0ff; border-radius: 5px; padding: 20px;}
+</style>
+<div class = "blue">
 
-#### Random Forest
+There is no overfitting signal, no need to prune the tree. This is understandable given the low scores we manage to achieve.
+
+</div>
+
+<br>
+
+#### 4.2.1.5 : Random Forest
 
 ```{r}
 # HYPERPARAMETER TUNING FOR RF
 # THIS CODE WORK PERFECTLY BUT TAKES 20 MIN TO RUN
 # WE GIVE YOU THE OUTPUT OF THIS RUN
-# IN ORDER TO DECREASE KNIT TIME, WE REMOVE THE CODE AND CONSIDER IT AS TEST
+# IN ORDER TO DECREASE KNIT TIME, WE REMOVE THE CODE.
+# -> if you want to verify our score, please remove the #
+
+
 #hyperparameter_rf <-
 #  train(
 #    share_label ~ .,
@@ -225,31 +416,47 @@ There is no need to prune the tree since we have only 3 nodes and looking at the
 #    tuneGrid = expand.grid(.mtry = seq(1,5, 0.5)),
 #    trControl = trControl
 #  )
+
+
+
+
 #Random Forest 
-#10000 samples
-#   21 predictor
-#    2 classes: 'Unpopular', 'Popular' 
+
+#5000 samples
+#  19 predictor
+#   2 classes: 'Unpopular', 'Popular' 
+
 #No pre-processing
 #Resampling: Cross-Validated (5 fold) 
-#Summary of sample sizes: 8000, 7999, 8001, 8000, 8000 
+#Summary of sample sizes: 4000, 4000, 4000, 4000, 4000 
 #Resampling results across tuning parameters:
+
 #  mtry  Accuracy  Kappa
-#  1.0   0.626     0.247
-#  1.5   0.639     0.275
-#  2.0   0.639     0.277
-#  2.5   0.641     0.280
-#  3.0   0.633     0.265
-#  3.5   0.636     0.271
-#  4.0   0.633     0.266
-#  4.5   0.634     0.266
-#  5.0   0.634     0.268
+#  1.0   0.628     0.236
+#  1.5   0.639     0.268
+#  2.0   0.640     0.271
+#  2.5   0.642     0.274
+#  3.0   0.640     0.271
+#  3.5   0.640     0.271
+#  4.0   0.639     0.270
+#  4.5   0.634     0.259
+#  5.0   0.633     0.257
+
 #Accuracy was used to select the optimal model using the largest value.
 #The final value used for the model was mtry = 2.5.
 ```
 
-The random forest model gives us results really similar to the svm model.
-accuracy = 0.637 and Kappa = 0.672
-```{r}
+<style>
+div.blue { background-color:#e6f0ff; border-radius: 5px; padding: 20px;}
+</style>
+<div class = "blue">
+
+We wanted to absolutely test the predictive capabilities of this model because the literature defines it as the best for predicting this dataset.On this algorithm, we also tuned our hyperparameter. The only hyperparameter that we've tuned with this algorithme is the number of random variables selected by the algorithm when forming each tree division (mtry). The mtry which maximises our scores is 2.5 (mtry = 2.5). We will therefore perform a random forest with mtry = 2.5 and see what its predictive power is.
+
+</div>
+
+
+```{r warning=FALSE}
 rf <- train(share_label~.,
             data = final_df.tr,
             method = "rf",
@@ -263,12 +470,34 @@ rf.te.pred <- predict(rf,
                       type = "raw")
 confusionMatrix(data = as.factor(rf.te.pred),
                 reference = final_df.te$share_label)
-# Best Kappa so far: 0.274
-# Best Balanced Accuracy so far : 0.637 
+# Best Kappa so far: 0.289
+# Best Balanced Accuracy so far : 0.644
 ```
-#### Bonus part: Variable importance
 
-We compute the variable importance on the random forest model
+<style>
+div.blue { background-color:#e6f0ff; border-radius: 5px; padding: 20px;}
+</style>
+<div class = "blue">
+
+The random forest model gives us very similar results to the SMV model but slightly better. We can reach a 0.289 Kappa and a 0.644 Balanced Accuracy. This algorithm gives us the best results. It is this algorithm that should be used to plan new instances.
+We also note that these scores are not very high and that our algorithms have difficulty predicting which articles are popular or not. We have about a 65% chance of predicting the correct classification. Which is really low. We will discuss the assumptions of why we think these algorithms perform so poorly at the conclusion 
+
+</div>
+
+<br>
+
+####  Variable importance
+
+<style>
+div.blue { background-color:#e6f0ff; border-radius: 5px; padding: 20px;}
+</style>
+<div class = "blue">
+
+As the random forest is our best model, we found important to mention which features were the more important to classify as popular. For this we have decided to focus on the mean decrease Gini. This score expresses how much the models' accuracy loose if we remove a particular feature. The higher the MDG, the more important the feature.
+
+</div>
+
+<br>
 
 ```{r}
 # Variable importance random forest
@@ -276,36 +505,50 @@ rf <- randomForest(share_label ~ ., data = final_df.tr)
 varImpPlot(rf)
 ```
 
-Gini coefficient is an impurity measure. The interpretation of the plot is the following: on the top the most important variables that contribute the most to decrease the node impurity. self_reference.avg_sharess is the most important variable and "day_is_weekend" is the less important.
+<br>
 
+<style>
+div.blue { background-color:#e6f0ff; border-radius: 5px; padding: 20px;}
+</style>
+<div class = "blue">
 
-Variable importance on Random forest
+The interpretation of the plot is the following: on the top the most important variables that contribute the most to decrease the node impurity. To sum up: self_reference.avg_shares is the most important variable and "day_is_weekend" is the less important in order to classify articles. The day_is_weekend feature is not surprisingly important as the day information is already in another feature, so we could have removed it to reduce the complexity of the model.
+On the other hand, what is more surprising is that the number of images and the number of videos is not that important, whereas we would tend to give more value to those information. What seems to be more important is the number of references, the average length of the article and the level of subjectivity of the article.
 
+</div>
 
 ```{r}
 # variable importance CART
 
 # without shuffle 
-final_df.tree <- rpart(share_label ~ ., data=final_df.tr)
-rpart.plot(final_df.tree)
-final_df.tree.pred <- predict(final_df.tree, newdata = final_df.te, type = "class")
-confusionMatrix(data = as.factor(final_df.tree.pred),
-                reference = final_df.te$share_label)
-
-
-#shuffle on self_reference_avg_sharess
-set.seed(143)
-final_df.te_shuffle <- final_df.te
-final_df.te_shuffle$self_reference_avg_sharess <- sample(final_df.te_shuffle$self_reference_avg_sharess)
-final_df.tree.pre_shuffle <- predict(final_df.tree, newdata = final_df.te_shuffle, type = "class")
-confusionMatrix(data = as.factor(final_df.tree.pre_shuffle), reference = final_df.te$share_label)
-
+#final_df.tree <- rpart(share_label ~ ., data=final_df.tr)
+#rpart.plot(final_df.tree)
+#final_df.tree.pred <- predict(final_df.tree, newdata = final_df.te, type = "class")
+#confusionMatrix(data = as.factor(final_df.tree.pred),
+#                reference = final_df.te$share_label)
+#
+#
+##shuffle on self_reference_avg_sharess
+#set.seed(143)
+#final_df.te_shuffle <- final_df.te
+#final_df.te_shuffle$self_reference_avg_sharess <- sample(final_df.te_shuffle$self_reference_avg_sharess)
+#final_df.tree.pre_shuffle <- predict(final_df.tree, newdata = final_df.te_shuffle, type = "class")
+#confusionMatrix(data = as.factor(final_df.tree.pre_shuffle), reference = final_df.te$share_label)
+#Looking at the output we see that the accuracy changes from 0.613 to 0.566 ( the latter result is in the shuffle procedure).
 ```
-Looking at the output we see that the accuracy changes from 0.613 to 0.566 ( the latter result is in the shuffle procedure).
+<br>
 
 
-### Multi-Classes : Searching for outstanding popularity
+### 4.2.2 : Multi-Classes : Searching for outstanding popularity
 
+<style>
+div.blue { background-color:#e6f0ff; border-radius: 5px; padding: 20px;}
+</style>
+<div class = "blue">
+
+What we presented earlier is a binary classification of whether an article is popular or not. This analysis is done in most of the literature on this dataset. However, we find this a bit reductive. We also wanted to analyse whether it was possible to predict the most shared articles (the last 5 quantiles of the share variable). In this new part, we want to check if our best algorithm can predict the articles with impressive and rare popularity, and of course thanks to which variable.
+
+</div>
 
 ```{r}
 set.seed(1996) ## for replication purpose
@@ -317,7 +560,15 @@ classes_df.tr <- classes_df[c.index.tr,]
 classes_df.te <- classes_df[-c.index.tr,]
 ```
 
-Sub sampling
+<style>
+div.blue { background-color:#e6f0ff; border-radius: 5px; padding: 20px;}
+</style>
+<div class = "blue">
+
+To do such an analysis, we had to change how our instances were distributed in classes because our classes were not proportional.
+
+</div>
+
 ```{r}
 df.tr.unpop <- filter(classes_df.tr, share_classes == "Unpopular")
 df.tr.pop <- filter(classes_df.tr, share_classes == "Popular")
@@ -331,8 +582,28 @@ df.tr.subs <- data.frame(rbind(df.tr.out,
 table(df.tr.subs$share_classes)
 ```
 
+<style>
+div.blue { background-color:#e6f0ff; border-radius: 5px; padding: 20px;}
+</style>
+<div class = "blue">
+
+Now that we have a balanced training set, we can start our analysis.
+
+</div>
+
+<br>
+
+
 ##### Random forest
-In the following part, we computed a random forest on multi-class variable.
+
+<style>
+div.blue { background-color:#e6f0ff; border-radius: 5px; padding: 20px;}
+</style>
+<div class = "blue">
+
+In an attempt to predict articles with impressive popularity, we chose the model that worked best in our binary analysis. In the following part, we computed a random forest on multi-class variable.
+
+</div>
 
 ```{r}
 rf_outstanding <- train(share_classes~.,
@@ -352,16 +623,28 @@ confusionMatrix(data = as.factor(rf.te.pred),
                 reference = classes_df.te$share_classes)
 
 ```
-From the confusion matrix we notice that the overall accuracy is really low. ( 0.482) 
-Looking at the results for the different classes: the most predictable papers are the ones with an high level of popularity ( outstanding ). Outstanding class predictions gives us an accuracy of 0.65.
 
-prediction using type = "class" in prediction function
+<style>
+div.blue { background-color:#e6f0ff; border-radius: 5px; padding: 20px;}
+</style>
+<div class = "blue">
+
+We are quite surprised by the results. This algorithm gives a good specificity for the three classes. For the outstanding class, the algorithm manages to recognize 208/367 instances. We find that this is a good performance even if we would like a higher predictive power. However, the Kappa we've found is equal to 0.209, which is considered low.
+We will come back to the conclusion of why we think that these algorithms have difficulties to work on this dataset
+
+</div>
+
 ```{r}
-library(randomForest)
+# Variable importance random forest
 rf <- randomForest(share_classes ~ ., data = df.tr.subs)
-rf.te.pred <- predict(rf, newdata = classes_df.te, type = "class")
-confusionMatrix(data = as.factor(rf.te.pred),
-                reference = classes_df.te$share_classes)
+varImpPlot(rf)
 ```
-results are slightly worse than the case type = raw.
 
+<style>
+div.blue { background-color:#e6f0ff; border-radius: 5px; padding: 20px;}
+</style>
+<div class = "blue">
+
+Very little change in the importance of variables compared to the binary analysis. The interpretation made earlier can also be applied here.
+
+</div>
