@@ -15,7 +15,7 @@ div.blue { background-color:#e6f0ff; border-radius: 5px; padding: 20px;}
 </style>
 <div class = "blue">
 
-Start the unsupervised learning by giving an overlook to the correlation between variables. It is important to look at the correlation structure in order to get a primary view of what probably going to happen for dimension reduction.
+We start our unsupervised learning analysis by giving an overlook to the correlation between variables. It is important to look at the correlation structure in order to get a primary view of what probably going to happen for dimension reduction.
 
 </div>
 
@@ -31,8 +31,8 @@ div.blue { background-color:#e6f0ff; border-radius: 5px; padding: 20px;}
 <div class = "blue">
 
 Color gradation gives us the information about the positive/negative correlation intensity.
-We can notice that there are some variable highly negative correlated between them, such as rate_negative_words and rate_positive_words and n_unique_token together with n_token_content.
-We conclude those variables to be the same, we could remove one of them or let the dimension reduction act for those variable. Rather positively correlated are rate_positive_words and global_sentiment polarity. For the rest of the variables, we see that it is difficult to see any correlation: they are very small. We are wondering what the result will be with the dimension reduction.
+We can notice that there are some highly negative correlated variables, such as rate_negative_words and rate_positive_words and n_unique_token together with n_token_content.We conclude that these variables are similar enough that we could remove one of them or let the dimension reduction replace this variable. 
+Rate_positive_words and global_sentiment are polarity positively correlated variables. For the rest of the variables, we see that it is difficult to see any strong correlation. Dimension reduction should provide us with a clearer picture.
 
 </div>
 
@@ -48,7 +48,7 @@ div.blue { background-color:#e6f0ff; border-radius: 5px; padding: 20px;}
 <div class = "blue">
 
 After inspecting the correlation structure, we compute the Principal Component Analysis.
-in order to give the same importance to each variable we scale the data first, and then compute the PCA.
+In order to give the same importance to each variable, we scale the data first, and then compute the PCA.
 
 </div>
 
@@ -72,7 +72,7 @@ Mainly positively correlated with n_non_stop_unique_token and n_unique_token and
 * Second component:
 Mainly positively correlated with rate_positive_words and global_sentiment_polarity; negatively correlated with rate_negative_words. Slightly negatively correlated also with n_non_stop_unique_token and n_unique_token.
 
-What we conclude from this graph is that there are variables that are the same. We are not going to remove them and let dimension reduction do its job.
+What we conclude from this graph is that there are some highly correlated variables. We are not going to remove them and instead let dimension reduction do its job.
 
 </div>
 
@@ -89,8 +89,7 @@ div.blue { background-color:#e6f0ff; border-radius: 5px; padding: 20px;}
 </style>
 <div class = "blue">
 
-Notice that the first dimension account for 18.8% of the total variance, and the second dimension for 17.6%. Since the third component the explained variance is halved with respect to the second component. To have 60% of the total variance explained, we would need to reduce the dimensions with 5 components. We think that 5 components is a lot. But if they make sense (that the components include distinct features), this number of dimensions is justified. Let us proceed to the analysis of the inside of these components
-
+Notice that the first dimension accounts for 18.8% of the total variance, and the second dimension for 17.6%. For the third component the explained variance is halved with respect to the second component. To have 60% of the total variance explained, we would need to reduce the dimensions with 5 components. 5 components seems like a lo, but if they make sense (that the components include distinct features), this number of dimensions is justified. Below we can see the composition of each of the first 4 components.
 </div>
 
 <br>
@@ -117,10 +116,10 @@ div.blue { background-color:#e6f0ff; border-radius: 5px; padding: 20px;}
 </style>
 <div class = "blue">
 
-In this section, we fit different models in order to best predict the share popularity of a news article.
-We conducted two supervised learnings: one for binary class and one for multi class.
-As mentioned earlier, we have chosen to transform the first 50 quantiles of the share variable. These low-share items will be put in the binary class: Unpopular. The last 50 quantiles will have the most shared items and will be considered popular. Our goal, with binary classification tools, is to predict whether an article will be popular or not.
-Whereas, in the multi-classes we predict the share_class variable that can assume one more labels of popularity which is: Outstanding. The aim with this classification is to analyse whether our best models are able to predict articles with impressive popularity according to specific features.
+In this section, we will fit different models in order to attempt to predict the share popularity of a news article.
+We conducted two supervised learning tasks: a binary class one and a multi class one.
+As mentioned earlier, we have chosen to label the instances with below a share value below the median as Unpopular and instances above the median as Popular. Our goal with this binary classification task, is to predict whether an article will be popular or not.
+For the multi-class case we create another category for the top 5% in terms of popularity: Outstanding. The aim with this classification is to see whether our best models are able to predict particularly popular articles.
 
 </div>
 
@@ -135,7 +134,7 @@ div.blue { background-color:#e6f0ff; border-radius: 5px; padding: 20px;}
 </style>
 <div class = "blue">
 
-As always, we split the dataset in 2 subgroups: the training set and the test set. We decided to made a training set that accounts for the 80% of the total dataset, thereby the test set is the 20% remaining.
+As always, we split the dataset into 2 subgroups: the training set and the test set. We decided to make a training set that accounts for 80% of the dataset, and the test set is the remaining 20%.
 
 </div>
 
@@ -161,7 +160,7 @@ div.blue { background-color:#e6f0ff; border-radius: 5px; padding: 20px;}
 </style>
 <div class = "blue">
 
-With the aim of avoid overfitting and some selection bias, we will use also a cross validation splitting. To be precise, a 5 fold Cross-validation in order to reduce computational time due to our big dataset. We also believe that going beyond 5 folds is not very useful because, according to the literature, this data-set have poor prediction abilities
+With the goal of avoid overfitting and selection bias, we will also perform a cross validation split. We have decided to use only a 5-fold cross-validation in order to minimize computational time, because our dataset is very large. 
 
 </div>
 
@@ -182,10 +181,10 @@ div.blue { background-color:#e6f0ff; border-radius: 5px; padding: 20px;}
 <div class = "blue">
 
 The first algorithm that we are going to test on our dataset is the KNN.
-We're going to use all the features selected in order to check the prediction abilities of KNN on this dataset.
-It is important to decide which value of the hyperparameter K the model should use in order to optimize the prediction power of the algorithm and our results, to do this we tuned the hyperparameter K. We defined range of values that K could assume: from 1 to 10. 
+We're going to use all the selected features in order to check the prediction abilities of KNN on this dataset.
+It is important to decide which value of the hyperparameter K the model should use in order to optimize the prediction power of the algorithm and our results. To do this we tuned the hyperparameter K. We defined range of values that K could assume: from 1 to 10. 
 
-From the hyperparameter tuning results, it turns out that the value of K = 9 maximizes Kappa and the accuracy. We'll fit our training with this hyperparameter setting.
+From the hyperparameter tuning results, it turns out that the value of K = 9 maximizes the Kappa and the accuracy. We'll fit our training set with this hyperparameter setting.
 
 </div>
 
@@ -217,8 +216,9 @@ div.blue { background-color:#e6f0ff; border-radius: 5px; padding: 20px;}
 </style>
 <div class = "blue">
 
-As we can see from the results, the prediction quality of the KNN algorithm is not satisfying, we achieve a Balanced Accuracy of 0.558. This algorithm also has more difficulty in predicting popular articles: Specificity < Sensitivity. Let us remind ourselves what a Cohen's Kappa means. This score compares the accuracy that we found with the algorithm with the accuracy that would have happened through some random predictions. If it is close to 1, it means that our algorithm is performing well. We see that here, the Kappa is close to 0.116, this algorithm is almost indistinguishable from an algorithm that would predict random classifications.
-As expected the "lazy learner" provide a really poor prediction. Now let's see if other algorithms perform better.
+As we can see from the results, the prediction quality of the KNN algorithm is not satisfying, we achieve a Balanced Accuracy of 0.558. This algorithm also has more difficulty in predicting popular articles: Specificity < Sensitivity. 
+The Cohen's Kappa score compares the accuracy that we found with the algorithm with the accuracy that would have been achieved with essentially random predictions. If it is close to 1, it means that our algorithm is performing well. We see that here, the Kappa is close to 0.116, this algorithm is almost indistinguishable from an algorithm that would predict randomly based on knowing the proportions of each category.
+
 
 </div>
 
@@ -233,7 +233,7 @@ div.blue { background-color:#e6f0ff; border-radius: 5px; padding: 20px;}
 <div class = "blue">
 
 The next prediction algorithm we will train on our dataset is the Naive Bayes classifier.
-As always, we train the model on the training set and compute the prediction on the test set. If you go back to the section where we show visualisations of each of our features, you can see that few of them have a normal distribution. So we chose to train a model with another distribution with a more flexible density: we will use a kernel density estimator.
+As always, we train the model on the training set and compute the prediction on the test set. If you go back to the section where we show visualisations of each of our features, you can see that few of them have a normal distribution. So we chose to train the model with a kernel density estimator, which is more flexible in terms of the shape of the distribution.
 
 </div>
 
@@ -257,7 +257,7 @@ div.blue { background-color:#e6f0ff; border-radius: 5px; padding: 20px;}
 </style>
 <div class = "blue">
 
-We notice that this algorithm works better than the previous one. It predicts 0.761 of unpopular articles when they were actually classified as unpopular. Unfortunately, it has a very poor ability to predict popular articles (Specificity : 0.438). Thus, the prediction quality of the  algorithm is still not satisfying, we achieve a Balanced Accuracy of 0.600. With this method, we achieved a Kappa of .195, which is very low. 
+We notice that this algorithm works better than the previous one. It predicts 0.761 of unpopular articles correctly. Unfortunately, it has a very poor ability to predict popular articles (Specificity : 0.438). Thus, the prediction quality of the  algorithm is still not satisfying, we achieve a Balanced Accuracy of 0.600. With this method, we achieved a Kappa of .195, which is still very low. 
 
 </div>
 
@@ -272,7 +272,7 @@ div.blue { background-color:#e6f0ff; border-radius: 5px; padding: 20px;}
 </style>
 <div class = "blue">
 
-As our RAM/CPU struggles while hyper-parameter tuning, we've chosen to sample a part of our data in order to have less computational effort. 
+As our RAM/CPU struggles with hyper-parameter tuning, we've chosen to sample a part of our data in order to have minimize the required computational power. 
 
 ```{r}
 #as our RAM/CPU struggles while hyper-parameter tuning, we've chosen to sample a part of our data in order to have less computational effort
@@ -299,16 +299,16 @@ div.blue { background-color:#e6f0ff; border-radius: 5px; padding: 20px;}
 <div class = "blue">
 
 The next algorithm for which we wanted to check the prediction accuracy for our dataset is SVM.
-As we have a lot of variable,  features correlation, and non-normal distribution, we assume non-linear relationship between variables so we precise our analysis on SVM with radial kernel.
+As we have a lot of variables, correlated features, and non-normal distribution, we assume a non-linear relationship between variables. We thus decided to use a radial kernel for our analysis.
 
-To do this, we chose to set our hyperparameters by performing a grid-search based on 8 values.
+T select our hyperparameters we decided to perform a grid-search based on 8 values.
 
 | Sigma | Cost | 
 |------------------|------------------|
 | 0.01, 0.02, 0.05, 0.1 | 0.00, 0.25, 0.50, 0.75, 1.00 |
 
 
-Thanks to the tuning of hyperparameters, the values of sigma and C that maximizes our scores and that we're going to use for the model training are: sigma = 0.01 and C = 0.25
+The values of sigma and C that maximize our scores and that we're going to use for the model training are: sigma = 0.01 and C = 0.25
 
 </div>
 
@@ -339,7 +339,7 @@ div.blue { background-color:#e6f0ff; border-radius: 5px; padding: 20px;}
 </style>
 <div class = "blue">
 
-This algorithm is giving the best results so far. The Kappa is equal to 0.264 and the Balanced Accuracy  is equal to 0.631. But let's be reasonable, these are not good measures of accuracy. The Kappa is not big enough... Even with this algorithm, our black box has trouble classifying. If we look at the Sensitivity score (=0.558), we can thus conclude that it struggles predicting unpopular articles. On the other hand, if we look at the  Specificity score (=0.705), we're reaching a good level of prediction for popular articles.
+This algorithm gives us the best results so far. The Kappa is equal to 0.264 and the Balanced Accuracy  is equal to 0.631. This is still however not very good. Even with this algorithm, our model has trouble classifying articles correctly. If we look at the Sensitivity score (=0.558), we can see that it struggles predicting unpopular articles. If we look at the  Specificity score (=0.705), we're reaching a decent level of prediction for popular articles.
 
 </div>
 
@@ -352,8 +352,8 @@ div.blue { background-color:#e6f0ff; border-radius: 5px; padding: 20px;}
 </style>
 <div class = "blue">
 
-The second last algorithm for which we wanted to check the prediction accuracy is the CART algorithm.
-This algorithm can also be very interesting not for predictive purposes but to see which features most influences the classification to a popular article.
+The second to last algorithm for which we wanted to check the prediction accuracy is the CART algorithm.
+This algorithm can also be interesting not only for predictive purposes but also to see which features most influence the classification process.
 
 </div>
 
@@ -372,11 +372,11 @@ div.blue { background-color:#e6f0ff; border-radius: 5px; padding: 20px;}
 </style>
 <div class = "blue">
 
-The scores of this model are worse than those of the SVM model, we do not think to keep this model to predict our new instances.
+The scores for this model are worse than those of the SVM model, we will not keep this model to predict our new instances.
 
-But it is very interesting to note which features influence the classification as popular, not popular. As we already seen in the EDA part, we can see that most of the choices are made on the theme of the article, the day and the number of referrals. If the topic of the article is not Business/Entertainment/World (Lifestyle or Social Media) or if it is published on the weekend, it is more likely to be popular. It is worth noting that no NLP values are important in the choice for classification.
+But it is very interesting to note which features influence the classification. As we have already seen in the EDA part, we can see that most of the choices are made on the theme of the article, the day and the number of referrals. If the topic of the article is something other than Business/Entertainment/World (i.e. Lifestyle or Social Media) or if it is published on the weekend, it is more likely to be popular. It is worth noting that the NLP values are not the most important for the classification choice .
 
-To see if this algorithm has a risk of overfitting, we will check if the tree does need to be reduce : 
+To very that this algorithm isn't overfitiing, we will check if the tree does needs to be pruned : 
 
 </div>
 
@@ -391,7 +391,7 @@ div.blue { background-color:#e6f0ff; border-radius: 5px; padding: 20px;}
 </style>
 <div class = "blue">
 
-There is no overfitting signal, no need to prune the tree. This is understandable given the low scores we manage to achieve.
+There is no overfitting signal, no need to prune the tree. This is understandable given the low scores we acheived.
 
 </div>
 
@@ -451,7 +451,7 @@ div.blue { background-color:#e6f0ff; border-radius: 5px; padding: 20px;}
 </style>
 <div class = "blue">
 
-We wanted to absolutely test the predictive capabilities of this model because the literature defines it as the best for predicting this dataset.On this algorithm, we also tuned our hyperparameter. The only hyperparameter that we've tuned with this algorithme is the number of random variables selected by the algorithm when forming each tree division (mtry). The mtry which maximises our scores is 2.5 (mtry = 2.5). We will therefore perform a random forest with mtry = 2.5 and see what its predictive power is.
+We wanted to test the predictive capabilities of this model because the literature defines it as the best for predicting this dataset. The only hyperparameter that we've tuned with this algorithm is the number of random variables selected by the algorithm when forming each tree division (mtry). The mtry which maximises our scores is 2.5. We will therefore perform a random forest with mtry = 2.5 and see what its predictive power is.
 
 </div>
 
@@ -480,7 +480,7 @@ div.blue { background-color:#e6f0ff; border-radius: 5px; padding: 20px;}
 <div class = "blue">
 
 The random forest model gives us very similar results to the SMV model but slightly better. We can reach a 0.289 Kappa and a 0.644 Balanced Accuracy. This algorithm gives us the best results. It is this algorithm that should be used to plan new instances.
-We also note that these scores are not very high and that our algorithms have difficulty predicting which articles are popular or not. We have about a 65% chance of predicting the correct classification. Which is really low. We will discuss the assumptions of why we think these algorithms perform so poorly at the conclusion 
+We note, however, that these scores are still not very high and that our algorithms have difficulty predicting which articles are popular or not. We have about a 65% chance of predicting the correct classification. Which is rather low. We will discuss why we think these algorithms perform so poorly later on. 
 
 </div>
 
@@ -493,7 +493,7 @@ div.blue { background-color:#e6f0ff; border-radius: 5px; padding: 20px;}
 </style>
 <div class = "blue">
 
-As the random forest is our best model, we found important to mention which features were the more important to classify as popular. For this we have decided to focus on the mean decrease Gini. This score expresses how much the models' accuracy loose if we remove a particular feature. The higher the MDG, the more important the feature.
+As the random forest is our best model, we found it important to mention which features were the most important for theclassification task. For this we have decided to focus on the mean decrease Gini. This score expresses how much accuracy the model loses if we remove a particular feature. The higher the MDG, the more important the feature.
 
 </div>
 
@@ -512,8 +512,8 @@ div.blue { background-color:#e6f0ff; border-radius: 5px; padding: 20px;}
 </style>
 <div class = "blue">
 
-The interpretation of the plot is the following: on the top the most important variables that contribute the most to decrease the node impurity. To sum up: self_reference.avg_shares is the most important variable and "day_is_weekend" is the less important in order to classify articles. The day_is_weekend feature is not surprisingly important as the day information is already in another feature, so we could have removed it to reduce the complexity of the model.
-On the other hand, what is more surprising is that the number of images and the number of videos is not that important, whereas we would tend to give more value to those information. What seems to be more important is the number of references, the average length of the article and the level of subjectivity of the article.
+On the top of this plot, we can see the variables that contribute the most to decrease the node impurity. To sum up: self_reference.avg_shares is the most important variable and "day_is_weekend" is the least important in order to classify articles. That day_is_weekend is important is not surprising as the day information is already in another feature, so we could have removed it to reduce the complexity of the model.
+On the other hand, what is more surprising is that the number of images and the number of videos is not that important, whereas we would intuitively consider this information to be more useful. What seems to be more important is the number of references, the average length of the article and the level of subjectivity of the article.
 
 </div>
 
@@ -546,7 +546,7 @@ div.blue { background-color:#e6f0ff; border-radius: 5px; padding: 20px;}
 </style>
 <div class = "blue">
 
-What we presented earlier is a binary classification of whether an article is popular or not. This analysis is done in most of the literature on this dataset. However, we find this a bit reductive. We also wanted to analyse whether it was possible to predict the most shared articles (the last 5 quantiles of the share variable). In this new part, we want to check if our best algorithm can predict the articles with impressive and rare popularity, and of course thanks to which variable.
+What we presented earlier is a binary classification of whether an article is popular or not. This analysis is done in most of the literature on this dataset. However, we also wanted to analyse whether it was possible to predict the most shared articles (by this we mean articles for which the share value is higher than the 0.95 quantile). In this new part, we want to check if our best algorithm can predict the articles with impressive and rare popularity.
 
 </div>
 
@@ -601,7 +601,7 @@ div.blue { background-color:#e6f0ff; border-radius: 5px; padding: 20px;}
 </style>
 <div class = "blue">
 
-In an attempt to predict articles with impressive popularity, we chose the model that worked best in our binary analysis. In the following part, we computed a random forest on multi-class variable.
+In an attempt to predict articles with outstanding popularity, we chose the model that worked best in our binary analysis. In the following part, we computed a random forest on our multi-class variable.
 
 </div>
 
@@ -629,8 +629,8 @@ div.blue { background-color:#e6f0ff; border-radius: 5px; padding: 20px;}
 </style>
 <div class = "blue">
 
-We are quite surprised by the results. This algorithm gives a good specificity for the three classes. For the outstanding class, the algorithm manages to recognize 208/367 instances. We find that this is a good performance even if we would like a higher predictive power. However, the Kappa we've found is equal to 0.209, which is considered low.
-We will come back to the conclusion of why we think that these algorithms have difficulties to work on this dataset
+This algorithm gives a good specificity for the three classes. For the outstanding class, the algorithm manages to recognize 208/367 instances. We find that this is a decent performance considering our results in the binary classification task. However, the Kappa we've found is equal to 0.209, which is not very high.
+
 
 </div>
 
